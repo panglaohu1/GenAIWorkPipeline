@@ -1,0 +1,122 @@
+[
+  {
+    "id": "pipeline-method",
+    "title": "在 GenAIWorkPipeline 中使用本顾问",
+    "origin": "GenAIWorkPipeline",
+    "original_path": "/Users/panglaohu/Downloads/GenAIWorkPipeline/skills/oskar-world-advisor/references/pipeline.md",
+    "snapshot": "agents/knowledge/oskar/sources/pipeline-method.md",
+    "sha256": "3e4a67671bf8e8c40e23452a695ead5b1dac330e991b2ca96a5f095546f0c457",
+    "imported": "2026-10-05",
+    "coverage": "project implementation notes"
+  },
+  {
+    "id": "pipeline-timeline",
+    "title": "@OskSta X 时间线研究（2016-08 → 2026-09）",
+    "origin": "GenAIWorkPipeline",
+    "original_path": "/Users/panglaohu/Downloads/GenAIWorkPipeline/skills/oskar-world-advisor/references/x-timeline.md",
+    "snapshot": "agents/knowledge/oskar/sources/pipeline-timeline.md",
+    "sha256": "87c2b9037c36ead7a2aa4450d97fd718cc4f569b0a49f3eb9a5a4b9661881a21",
+    "imported": "2026-10-05",
+    "coverage": "historical text and frame coverage, not full viewing"
+  },
+  {
+    "id": "tm-status",
+    "title": "Oskar 深入研究：2026-10-04 可交付结果与剩余缺口",
+    "origin": "TigerMessenger",
+    "original_path": "/Users/panglaohu/Downloads/TigerInBamboo/TigerMessenger/docs/OSKAR_DEEP_RESEARCH_STATUS.md",
+    "snapshot": "agents/knowledge/oskar/sources/tm-status.md",
+    "sha256": "1fdb31cecdc35bdcde3b7a4d4a28476b1dcaa48e832ef1c9299c73d8e71d4dae",
+    "imported": "2026-10-05",
+    "coverage": "latest coverage and corrections"
+  },
+  {
+    "id": "tm-games",
+    "title": "Oskar 两款已发布游戏：技术证据与可复现设计",
+    "origin": "TigerMessenger",
+    "original_path": "/Users/panglaohu/Downloads/TigerInBamboo/TigerMessenger/docs/OSKAR_GAME_SYSTEMS_DEEP_STUDY.md",
+    "snapshot": "agents/knowledge/oskar/sources/tm-games.md",
+    "sha256": "b5b15fa9d6f11269415d598c6ec939022594a9614be4dd5ca236425ddf0bf7b3",
+    "imported": "2026-10-05",
+    "coverage": "game research and project proposals"
+  },
+  {
+    "id": "tm-surface",
+    "title": "球面场景连接与十二门徒表现：2026-10-04",
+    "origin": "TigerMessenger",
+    "original_path": "/Users/panglaohu/Downloads/TigerInBamboo/TigerMessenger/docs/OSKAR_SPHERICAL_WORLD_CONNECTIONS.md",
+    "snapshot": "agents/knowledge/oskar/sources/tm-surface.md",
+    "sha256": "ca1bb5c9e3a9efa7ebcd0dbc568ede3adacd4e8dde11e406545a3750108d4583",
+    "imported": "2026-10-05",
+    "coverage": "proposed surface contract, not current pipeline implementation"
+  },
+  {
+    "id": "tm-media",
+    "title": "Oskar 动图、植被、云与配色研究",
+    "origin": "TigerMessenger",
+    "original_path": "/Users/panglaohu/Downloads/TigerInBamboo/TigerMessenger/docs/OSKAR_MEDIA_DEEP_STUDY.md",
+    "snapshot": "agents/knowledge/oskar/sources/tm-media.md",
+    "sha256": "3722def6c9b893fd55c3d70220b9f20970708d577be1f7f03fde19c2aa9105a4",
+    "imported": "2026-10-05",
+    "coverage": "inherited media observations and limitations"
+  },
+  {
+    "id": "tm-five-gifs",
+    "title": "五条 Oskar 动图：作者文字核查及实施建议",
+    "origin": "TigerMessenger",
+    "original_path": "/Users/panglaohu/Downloads/TigerInBamboo/TigerMessenger/artifacts/research/oskar-five-gifs-20261005/advisor.md",
+    "snapshot": "agents/knowledge/oskar/sources/tm-five-gifs.md",
+    "sha256": "d75e87252d06723ce859949ca3c1fc32241e996459c1fcd3d06d6f45bb17998b",
+    "imported": "2026-10-05",
+    "coverage": "five-post study, author statements and project inferences"
+  },
+  {
+    "id": "skill-modelling",
+    "title": "配色与模块建模重点",
+    "origin": "oskar-world-advisor",
+    "original_path": "/Users/panglaohu/.codex/skills/oskar-world-advisor/references/colour-and-modelling.md",
+    "snapshot": "agents/knowledge/oskar/sources/skill-modelling.md",
+    "sha256": "98d1849e68542395ab26fa0772409ddecdd4203079dd3779fbcc1f33b3b9d2d6",
+    "imported": "2026-10-05",
+    "coverage": "project guidance based on public research"
+  },
+  {
+    "id": "skill-recipes",
+    "title": "从研究到可验证样区",
+    "origin": "oskar-world-advisor",
+    "original_path": "/Users/panglaohu/.codex/skills/oskar-world-advisor/references/implementation-recipes.md",
+    "snapshot": "agents/knowledge/oskar/sources/skill-recipes.md",
+    "sha256": "a6a5cb330ee2d46e98cad1b4e4f062e90dde01be0953972bccfe037e2804f505",
+    "imported": "2026-10-05",
+    "coverage": "project guidance based on public research"
+  },
+  {
+    "id": "skill-rendering",
+    "title": "植被、云、线条与配色：证据到实现",
+    "origin": "oskar-world-advisor",
+    "original_path": "/Users/panglaohu/.codex/skills/oskar-world-advisor/references/rendering.md",
+    "snapshot": "agents/knowledge/oskar/sources/skill-rendering.md",
+    "sha256": "6e54ca8f6d2f5ef492f05258a9f4817468cc2536ade7899b6ad5709f631963a4",
+    "imported": "2026-10-05",
+    "coverage": "project guidance based on public research"
+  },
+  {
+    "id": "x-terrain",
+    "title": "@OskSta X 帖子：山形地势、边缘、水、光与连接（2021–2024，33 条）",
+    "origin": "x.com（用户提供链接，2026-10-06 内置浏览器阅读）",
+    "original_path": "https://x.com/OskSta",
+    "snapshot": "agents/knowledge/oskar/sources/x-terrain-2021-2024.md",
+    "sha256": "0e6f69b35befbd65dd729810f7c9fac03f894e0cc996eb708b69f4fadaaf8a5e",
+    "imported": "2026-10-06",
+    "coverage": "32/33 posts text + 6–8 sampled frames each; 1 post login-gated, unread; not full viewing"
+  },
+  {
+    "id": "x-palette-space",
+    "title": "@OskSta X：色彩可能性空间（palette authoring tool，2023-10-11）",
+    "origin": "x.com（用户提供链接，2026-10-06 内置浏览器阅读）",
+    "original_path": "https://x.com/OskSta/status/1712088611934371876",
+    "snapshot": "agents/knowledge/oskar/sources/x-palette-space-2023.md",
+    "sha256": "5587642474077411947930c2a59462a675e6c7ae65c20caa9c17bdbd00e1e529",
+    "imported": "2026-10-06",
+    "coverage": "post text + thread reply + sampled GIF frames (colour field corners read from 40×40 frames)"
+  }
+]

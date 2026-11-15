@@ -26,3 +26,10 @@ artifacts/
 *.bak
 *.bak_*
 *.pre_*.py
+# Godot 导入缓存（可重新生成，约 28 MB）
+**/.godot/
+# 项目级本地备份快照（含重复大模型，约 52 MB）
+projects/*/_backup_*/
+# 超出 GitHub 建议体积的中间资产：大模型与重复字体副本
+projects/oskar-trials/planet_game/assets/*.glb
+projects/oskar-trials/planet_game/addons/pipeline/fonts/*.otf

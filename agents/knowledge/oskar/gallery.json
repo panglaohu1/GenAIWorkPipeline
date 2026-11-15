@@ -1,0 +1,20 @@
+[
+  {
+    "id": "citadel",
+    "run_id": "20260929-082514-1b98",
+    "original_path": "runs/20260929-082514-1b98/blender/renders/r004_r3_hero.png",
+    "asset": "/static/oskar/citadel.png",
+    "sha256": "a9222e299621f20c9b5e87976f46a6fa214c90b6185fd4ae0a2e8fb6f4fbedf3",
+    "created": "2026-09-29",
+    "role": "pre-merge engine sample, not improvement evidence"
+  },
+  {
+    "id": "sea-stacks",
+    "run_id": "20260929-082514-68a0",
+    "original_path": "runs/20260929-082514-68a0/blender/renders/r004_r3_hero.png",
+    "asset": "/static/oskar/sea-stacks.png",
+    "sha256": "02388664d0663e40b8e570bb51097a306fa13bf266b260d4df85b07892f64616",
+    "created": "2026-09-29",
+    "role": "pre-merge engine sample, not improvement evidence"
+  }
+]
