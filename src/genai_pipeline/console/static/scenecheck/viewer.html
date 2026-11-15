@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="zh-Hans-CN">
+<head>
+<meta charset="utf-8">
+<title>场景验收 · 机位预览</title>
+<style>
+  html,body{margin:0;height:100%;overflow:hidden;background:#0e1620;
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Helvetica Neue",sans-serif}
+  #c{display:block;width:100%;height:100%}
+  #bar{position:fixed;top:10px;left:10px;display:flex;gap:6px;flex-wrap:wrap;z-index:9}
+  #bar button{background:rgba(20,30,42,.86);color:#dbe6f2;border:1px solid rgba(255,255,255,.14);
+    border-radius:8px;padding:6px 11px;font-size:12px;cursor:pointer;backdrop-filter:blur(10px)}
+  #bar button:hover{background:rgba(38,54,74,.94)}
+  #bar button.on{background:#2f6f4f;border-color:#4d9e74;color:#fff}
+  #hud{position:fixed;right:10px;bottom:10px;color:#8fa3b8;font-size:11.5px;z-index:9;text-align:right;line-height:1.6}
+  #load{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
+    color:#c8d7e6;font-size:12.5px;background:#0e1620;z-index:20;flex-direction:column;gap:10px}
+  .spin{width:22px;height:22px;border:3px solid rgba(255,255,255,.16);border-top-color:#6fb8ff;
+    border-radius:50%;animation:s .9s linear infinite}
+  @keyframes s{to{transform:rotate(360deg)}}
+</style>
+<script type="importmap">
+{"imports":{"three":"../vendor/three/three.module.js","three/addons/":"../vendor/three/addons/"}}
+</script>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="bar">
+  <button id="m-cam" class="on">机位视角</button>
+  <button id="m-free">自由旋转</button>
+  <button id="shot">截图</button>
+</div>
+<div id="hud">机位视角＝渲染时的正交机位，和你看到的渲染图一致<div id="hd2"></div></div>
+<div id="load"><div class="spin"></div><div id="ltxt">正在加载场景…</div></div>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
+
+const q = new URLSearchParams(location.search);
+const src = q.get('src');
+// 渲染机位：与 Blender 里那台 55mm 透视相机一致。
+// Blender 相机 loc(0,-14.5,3.1) -> tgt(0,5.2,2.45)，lens 55 / sensor 36 / 画幅 1600x1000。
+// 转到 glTF（y-up）后 x 不变、y=Blender z、z=-Blender y。
+const CAMLOC = (q.get('cloc') || '0,3.1,14.5').split(',').map(Number);
+const CAMTGT = (q.get('ctgt') || '0,2.45,-5.2').split(',').map(Number);
+const CVFOV  = parseFloat(q.get('vfov') || '23.1');
+
+const canvas = document.getElementById('c');
+const ltxt = document.getElementById('ltxt');
+const loadEl = document.getElementById('load');
+const renderer = new THREE.WebGLRenderer({canvas, antialias:true, preserveDrawingBuffer:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setSize(innerWidth, innerHeight, false);
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.NoToneMapping;   // Blender 用的是 Standard 视图变换
+
+const scene = new THREE.Scene();
+const BG_CAM = new THREE.Color(0x0e1620), BG_FREE = new THREE.Color(0x9dc0d8);
+scene.background = BG_CAM;
+
+const persp = new THREE.PerspectiveCamera(42, innerWidth/innerHeight, 0.05, 4000);
+const ortho = new THREE.PerspectiveCamera(CVFOV, innerWidth/innerHeight, 0.03, 8000);
+ortho.position.set(CAMLOC[0], CAMLOC[1], CAMLOC[2]);
+ortho.up.set(0,1,0);
+ortho.lookAt(CAMTGT[0], CAMTGT[1], CAMTGT[2]);
+let camera = ortho;
+
+const controls = new OrbitControls(persp, canvas);
+controls.enableDamping = true; controls.dampingFactor = 0.08;
+controls.autoRotateSpeed = 0.5; controls.enabled = false;
+
+scene.add(new THREE.HemisphereLight(0xdcecff, 0x8a7a58, 1.9));
+const key = new THREE.DirectionalLight(0xfff6e8, 2.6);
+key.position.set(-3, 6, 8); scene.add(key);
+const fill = new THREE.DirectionalLight(0xcfe0ff, 0.9);
+fill.position.set(4, 2, 9); scene.add(fill);
+
+function fitOrtho() {
+  const asp = innerWidth/innerHeight;
+  ortho.aspect = asp;
+  ortho.fov = CVFOV;
+  ortho.updateProjectionMatrix();
+}
+
+let freeHome = null;
+function fitPersp(obj) {
+  const box = new THREE.Box3();
+  const skip = /^(sky|sea|mtn)/;
+  obj.updateWorldMatrix(true, true);
+  obj.traverse(o => {
+    if (!o.isMesh) return;
+    let p = o, nm = o.name; while (p && p.name && nm === o.name) { nm = p.name; p = p.parent; }
+    if (skip.test(o.name)) return;
+    const b = new THREE.Box3().setFromObject(o);
+    if (isFinite(b.min.x)) box.union(b);
+  });
+  if (box.isEmpty()) box.setFromObject(obj);
+  const size = box.getSize(new THREE.Vector3()), ctr = box.getCenter(new THREE.Vector3());
+  const r = Math.max(size.x, size.y, size.z) || 1;
+  const d = r/(2*Math.tan(THREE.MathUtils.degToRad(persp.fov*0.5)))*1.3;
+  persp.position.set(ctr.x + d*0.1, ctr.y + d*0.28, ctr.z + d*1.0);
+  persp.near = Math.max(r/4000, 0.02); persp.far = r*60; persp.updateProjectionMatrix();
+  controls.target.copy(ctr); controls.minDistance = r*0.12; controls.maxDistance = r*4;
+  controls.update();
+  freeHome = {pos: persp.position.clone(), tgt: ctr.clone()};
+}
+
+const draco = new DRACOLoader();
+draco.setDecoderPath('../vendor/three/draco/');
+const loader = new GLTFLoader();
+loader.setDRACOLoader(draco);
+
+let stats = null;
+if (!src) { ltxt.textContent = '缺少模型地址'; }
+else loader.load(src, (gltf) => {
+  const model = gltf.scene;
+  let meshes = 0, tris = 0;
+  model.traverse(o => {
+    if (o.isMesh) {
+      meshes++;
+      const g = o.geometry;
+      tris += g.index ? g.index.count/3 : (g.attributes?.position ? g.attributes.position.count/3 : 0);
+    }
+  });
+  scene.add(model);
+  stats = {meshes, tris: Math.round(tris)};
+  fitOrtho(); fitPersp(model);
+  loadEl.style.display = 'none';
+  document.getElementById('hd2').textContent = `${meshes} 个网格 · ${stats.tris.toLocaleString()} 三角面`;
+}, (e) => {
+  ltxt.textContent = e.total ? `正在加载场景… ${Math.round(e.loaded/e.total*100)}%`
+                             : `正在加载场景… ${(e.loaded/1048576).toFixed(1)} MB`;
+}, (err) => { ltxt.textContent = '加载失败：' + (err && err.message ? err.message : err); });
+
+const bCam = document.getElementById('m-cam'), bFree = document.getElementById('m-free');
+function mode(m) {
+  const isCam = m === 'cam';
+  camera = isCam ? ortho : persp;
+  controls.enabled = !isCam;
+  controls.autoRotate = !isCam;
+  bCam.classList.toggle('on', isCam); bFree.classList.toggle('on', !isCam);
+  scene.background = isCam ? BG_CAM : BG_FREE;
+  if (isCam) fitOrtho();
+  else if (freeHome) { persp.position.copy(freeHome.pos); controls.target.copy(freeHome.tgt); controls.update(); }
+}
+if (q.get('mode') === 'free') { mode('free'); }
+bCam.onclick = () => mode('cam');
+bFree.onclick = () => mode('free');
+document.getElementById('shot').onclick = () => {
+  renderer.render(scene, camera);
+  const a = document.createElement('a');
+  a.download = 'scene_check.png'; a.href = renderer.domElement.toDataURL('image/png'); a.click();
+};
+addEventListener('resize', () => {
+  persp.aspect = innerWidth/innerHeight; persp.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight, false); fitOrtho();
+});
+fitOrtho();
+renderer.setAnimationLoop(() => { controls.update(); renderer.render(scene, camera); });
+</script>
+</body>
+</html>

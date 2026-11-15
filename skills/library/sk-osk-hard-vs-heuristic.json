@@ -1,0 +1,21 @@
+{
+  "id": "sk-osk-hard-vs-heuristic",
+  "name": "硬约束与偏好分开：概率不能冒充保证",
+  "icon": "⚖",
+  "stages": [
+    "plan",
+    "oskar",
+    "review"
+  ],
+  "required_tools": [],
+  "instructions": "把规则分成两类写清楚：硬约束（承托、净空、通路、不侵占铁路/广场/港口、地标唯一）必须满足，违反就拒绝方案；偏好（多放宽台、少用同镜像、草长在缓坡）只是权重。不要用“随机多试几次”来满足硬约束；预算耗尽要返回失败，保留上一版通过的结果。验收：报告里硬检查逐项通过/失败；失败时不交付半成品。",
+  "description": "EPC2018：邻接是硬约束，概率用于引导；矛盾时恢复初始状态重试。",
+  "category": "style",
+  "origin": "Oskar 内置资料库（agents/knowledge/oskar/library）· 2026-10-11 提炼",
+  "evidence": [
+    "lib-9d8e7b8e5c73 EPC2018 12:31–13:28、20:47–21:27、36:33–37:22",
+    "lib-79097f75cc66 从研究到可验证样区"
+  ],
+  "lifecycle": "draft",
+  "author_agent": "oskar"
+}

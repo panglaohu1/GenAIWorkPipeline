@@ -1,0 +1,23 @@
+{
+  "id": "sk-osk-deform-one-source",
+  "name": "一个形变源驱动所有依附物",
+  "icon": "🔗",
+  "stages": [
+    "model",
+    "assemble",
+    "review"
+  ],
+  "required_tools": [
+    "blender"
+  ],
+  "instructions": "地形或岩体一旦改动（收分、松弛、笼形变），草根、灌木、树、碰撞体、导航和接缝都必须从同一版本重新附着/重建；不能只改看得见的山。道具（灌木、长椅、门窗、灯）保持自身形状，只随附着点移动，不跟着墙体一起被拉伸。验收：改动后草与树无悬空/埋地；碰撞与可见表面一致；门窗不被剪切变形。",
+  "description": "作者讲明形变后草地和导航必须同步修改；Townscaper 的道具不随模块笼形变扭曲。",
+  "category": "style",
+  "origin": "Oskar 内置资料库（agents/knowledge/oskar/library）· 2026-10-11 提炼",
+  "evidence": [
+    "lib-362b24312fa4 Developing the Bad North Look 37:09–38:33",
+    "lib-b68d6719c85d The Story of Townscaper 17:50–19:18"
+  ],
+  "lifecycle": "draft",
+  "author_agent": "oskar"
+}

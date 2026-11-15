@@ -1,0 +1,22 @@
+{
+  "id": "sk-osk-semantic-relax",
+  "name": "分层松弛：硬边牵动软边，反之不行",
+  "icon": "🧵",
+  "stages": [
+    "model",
+    "review"
+  ],
+  "required_tools": [
+    "blender"
+  ],
+  "instructions": "要让岩体圆润、消除拼接印迹时，按优先级平滑：硬边（崖线、墙脚、门洞）> 材质边（草/岩、岩/水）> 玩法分区边 > 普通内部点。内部点向邻点平均，硬边点只沿硬边平均，三条以上硬边交汇点基本固定；建筑不参与平滑。可沿法线轻微外鼓得到圆润崖肩，但海蚀崖保留硬朗。法线变柔不等于轮廓变了。验收：轮廓确实变化、无翻面、门洞与通道宽度不变。",
+  "description": "等权松弛会扭曲沙滩、毁坏低模房屋；作者改为限制谁能拉动谁、沿哪些边拉动。",
+  "category": "style",
+  "origin": "Oskar 内置资料库（agents/knowledge/oskar/library）· 2026-10-11 提炼",
+  "evidence": [
+    "lib-ac6c254e3f2e Landscapes of Hex and Square 26:21–30:56、42:07–43:00",
+    "lib-88e55c36bf8f 模块网格、球面松弛与语义边"
+  ],
+  "lifecycle": "draft",
+  "author_agent": "oskar"
+}

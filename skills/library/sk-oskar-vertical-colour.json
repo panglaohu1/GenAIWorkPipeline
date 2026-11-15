@@ -1,0 +1,17 @@
+{
+  "id": "sk-oskar-vertical-colour",
+  "name": "岩体纵向配色（山顶→山脚）",
+  "icon": "🌈",
+  "stages": [
+    "oskar_build",
+    "model"
+  ],
+  "required_tools": [
+    "blender"
+  ],
+  "instructions": "岩体颜色沿每座峰从山顶向下铺：顶部暖橙 → 玫瑰 → 绿 → 蓝灰到山脚，与奶油色混 30% 保持柔和；朝上的面偏亮，悬挑下方压暗。不要横向条带。验收：每座峰都能看出从上到下的色阶。",
+  "description": "用户确认（2026-10-06）· Oskar palette-space 视频",
+  "category": "style",
+  "origin": "用户确认（2026-10-06）· Oskar palette-space 视频",
+  "lifecycle": "published"
+}

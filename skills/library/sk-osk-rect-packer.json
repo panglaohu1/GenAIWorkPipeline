@@ -1,0 +1,20 @@
+{
+  "id": "sk-osk-rect-packer",
+  "name": "二叉树矩形装箱：暴力找位，树做快速碰撞",
+  "icon": "🧮",
+  "stages": [
+    "plan",
+    "oskar",
+    "model"
+  ],
+  "required_tools": [],
+  "instructions": "需要把很多矩形塞进一块面积时（贴图图集、impostor 图集、平面上摆房屋/道具/地块）用二叉树装箱：节点是轴对齐区域，记录剩余空闲面积；插入时暴力枚举候选位置（已放矩形的角点，左下优先）以钻进角落缝隙，每个候选从根往下只查与它相交的子树——区域全空直接通过，空闲面积不足直接判碰撞（提前退出），不必每次走到树底；落位后切分并更新空闲计数。支持删除（加回空闲、全空子节点合并），删多了会碎片化。验收：无重叠；同样输入结果确定；装箱率高于简单行装；摆放场景元素时与路径、门口留出的净空不冲突。 引擎现状：二叉树装箱尚未实现；在此之前摆放房屋 / 道具时手动避开重叠与通路净空，并写进限制。",
+  "description": "作者 2024-03-05 binary tree rect packer 三段视频及回复（每个 bin 记空闲像素做 early-out、支持删除、用于图集）。 关键词：摆放、布置、不重叠、碰撞、图集、贴图、排布、房屋、道具",
+  "category": "style",
+  "origin": "Oskar 内置资料库（agents/knowledge/oskar/library）· 2026-10-22 精读 18 条帖子提炼",
+  "evidence": [
+    "lib-planet-threads-20261022 https://x.com/OskSta/status/1764958522398146667"
+  ],
+  "lifecycle": "draft",
+  "author_agent": "oskar"
+}

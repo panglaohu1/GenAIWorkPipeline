@@ -1,0 +1,21 @@
+{
+  "id": "sk-osk-layered-acceptance",
+  "name": "分层验收：白模→色块→光照→线条→云",
+  "icon": "🔍",
+  "stages": [
+    "review",
+    "oskar"
+  ],
+  "required_tools": [],
+  "instructions": "验收按层推进，前一层不过不进下一层：①关雾、关云、关描边看白模轮廓与台地宽度；②加语义色块看灰阶主次；③加光照看遮蔽与体积；④加细线看层次；⑤最后开云和雾。每层都用同 seed、同机位、同曝光截图对比。雾、云、描边不能用来掩盖大形问题。验收：每层有截图证据；问题定位到具体层。",
+  "description": "顾问规范：云关闭时也应能看清山势；作者多次用逐层调试视图比较效果。",
+  "category": "style",
+  "origin": "Oskar 内置资料库（agents/knowledge/oskar/library）· 2026-10-11 提炼",
+  "evidence": [
+    "lib-7b31f902980a Oskar 方法研究顾问",
+    "lib-f7bb607aecce 植被、云、线条与配色",
+    "lib-ac6c254e3f2e Landscapes 52:32–53:59"
+  ],
+  "lifecycle": "draft",
+  "author_agent": "oskar"
+}

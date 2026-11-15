@@ -1,0 +1,21 @@
+{
+  "id": "sk-osk-relax-batter",
+  "name": "高处收、低处放：用收分与软化代替随机",
+  "icon": "⛰",
+  "stages": [
+    "oskar",
+    "review"
+  ],
+  "required_tools": [],
+  "instructions": "岩柱和崖体要上窄下宽、崖面成坡，台地逐级抬升：在场景程序里定好主峰、台地、岩柱大形后，用引擎的 batter（收分 0–0.8）和 soften（平面轮廓软化 0–0.8）调整，不要用更多随机、植被或雾去遮盖生硬的格网轮廓。建筑与瀑布附近软化自动减弱。验收：白模无“蘑菇头”；塔状岩柱底部比顶部宽；格网锯齿不再主导剪影。",
+  "description": "作者 2021–2024 的地形帖子：笼形变形让崖壁自然，球面高山用单元松弛缓解膨胀。",
+  "category": "style",
+  "origin": "Oskar 内置资料库（agents/knowledge/oskar/library）· 2026-10-11 提炼",
+  "evidence": [
+    "lib-f731715b97f3 几何专题",
+    "lib-5247b1523443 几何增量：岛屿、控制笼",
+    "lib-xposts X 原帖 2022-10-10"
+  ],
+  "lifecycle": "draft",
+  "author_agent": "oskar"
+}

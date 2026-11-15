@@ -1,0 +1,16 @@
+{
+  "id": "sk-habitat-function",
+  "name": "居住功能与动线",
+  "icon": "🏠",
+  "stages": [
+    "plan",
+    "model",
+    "assemble"
+  ],
+  "required_tools": [],
+  "instructions": "设施要有用途和动线：水从哪来、在哪遮阴、东西怎么运、废物去哪；干湿分区清楚，服务路径不压主路。禁止泛用村庄、禁止满屏房子。验收：每个建筑能说出“谁在这里做什么、从哪进出”。",
+  "description": "居住逻辑 · Synergy 制作负责人问答",
+  "category": "style",
+  "origin": "居住逻辑 · Synergy 制作负责人问答",
+  "lifecycle": "published"
+}

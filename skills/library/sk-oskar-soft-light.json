@@ -1,0 +1,20 @@
+{
+  "id": "sk-oskar-soft-light",
+  "name": "Oskar：形体保持硬朗，受光变柔（体素法线 + 空气透视）",
+  "icon": "🌫",
+  "stages": [
+    "oskar_build",
+    "planet_godot",
+    "assemble",
+    "review"
+  ],
+  "required_tools": [
+    "blender",
+    "godot"
+  ],
+  "instructions": "棱角太尖时不要靠堆面数：剪影与台阶保持原样，只把法线做柔——体素重建一份平滑包络、按 0.3–0.4 混回自定义法线（引擎参数 soft_normals / voxel；0.55 以上会出斑驳）。远景统一向天色淡出（指数雾，密度约 0.1 / 星球半径），跟拍距离几乎不受影响；与 Blender 逐张核对的试运行截图不加雾。描边仍保持细、随距离变细。",
+  "description": "Oskar 推文（Bad North 2018-11）：用体素法线给岛再平滑一层，打散网格感；本项目实测参数",
+  "category": "style",
+  "origin": "Oskar 推文 · 本项目 2026-10-08 对比实验",
+  "lifecycle": "published"
+}

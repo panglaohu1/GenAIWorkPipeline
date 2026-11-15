@@ -1,0 +1,16 @@
+{
+  "id": "sk-semantic-palette",
+  "name": "语义色板（四到五个色族）",
+  "icon": "🖌",
+  "stages": [
+    "concept",
+    "model",
+    "review"
+  ],
+  "required_tools": [],
+  "instructions": "给每个色族一个语义：水 / 植被 / 岩土与路径 / 木质 / 暖色标记；每族一个主色加明暗两个变体，写出 HEX 与面积目标。暖色总面积 ≤5%，只放在到达节点与故事焦点；可走面比崖壁亮。验收：统计渲染图色族面积，与目标偏差 ≤10%。",
+  "description": "视觉规则 · Rollerdrome 主美问答（2022）",
+  "category": "style",
+  "origin": "视觉规则 · Rollerdrome 主美问答（2022）",
+  "lifecycle": "published"
+}

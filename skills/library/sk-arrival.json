@@ -1,0 +1,16 @@
+{
+  "id": "sk-arrival",
+  "name": "可见—遮挡—再显露的抵达路线",
+  "icon": "🧭",
+  "stages": [
+    "plan",
+    "assemble",
+    "review"
+  ],
+  "required_tools": [],
+  "instructions": "主地标在入口第一眼可见；中途被林冠或岩体遮住，制造好奇；走到下一层时以新的角度再次显露。每一段写清视点位置与可见性。验收：沿路线每 10 米一张截图，地标出现—消失—再出现成立。",
+  "description": "组长 · Sable 空间方法",
+  "category": "style",
+  "origin": "组长 · Sable 空间方法",
+  "lifecycle": "published"
+}

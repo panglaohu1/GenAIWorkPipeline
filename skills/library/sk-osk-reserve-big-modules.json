@@ -1,0 +1,21 @@
+{
+  "id": "sk-osk-reserve-big-modules",
+  "name": "先预留跨格大模块，再让周围生长",
+  "icon": "🏰",
+  "stages": [
+    "plan",
+    "oskar"
+  ],
+  "required_tools": [],
+  "instructions": "主楼、塔楼、穹顶、拱门、桥头、瀑布源这类跨多个单元的地标先定位置、朝向和出入口（building/bridge/waterfall 原语），再写周围的台地、城墙和房屋。不要靠多给随机种子等它“碰巧”出现；改动周边房屋时不重排地标。每个地标写清门/阶梯/桥端口朝哪。验收：地标唯一且位置稳定；端口前有路径或台地承接；换 seed 地标不漂移。",
+  "description": "作者 2024-01 明确：先生成大模块需要的局部网格再强制它出现，随机等待合适邻域不可靠；Bad North 也先预定房屋位置。",
+  "category": "style",
+  "origin": "Oskar 内置资料库（agents/knowledge/oskar/library）· 2026-10-11 提炼",
+  "evidence": [
+    "lib-f731715b97f3 几何专题（2024-01-29 强制大模块）",
+    "lib-88e55c36bf8f 模块网格、球面松弛与语义边",
+    "lib-9d8e7b8e5c73 EPC2018 15:26–16:14"
+  ],
+  "lifecycle": "draft",
+  "author_agent": "oskar"
+}

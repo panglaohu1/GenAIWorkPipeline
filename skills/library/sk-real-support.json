@@ -1,0 +1,18 @@
+{
+  "id": "sk-real-support",
+  "name": "可走面要有真实承托与净空",
+  "icon": "🦶",
+  "stages": [
+    "model",
+    "assemble",
+    "review"
+  ],
+  "required_tools": [
+    "godot"
+  ],
+  "instructions": "每条可走路径写清：入口、踩在什么面上、宽度 ≥1.2 m、头顶净空 ≥2.2 m、到哪离开；装饰平台不能冒充路线；植物与道具离路径边缘 ≥0.5 m。验收：Godot 里让角色沿路径往返一遍，无卡住、无穿模、无悬空。",
+  "description": "有机通行 · Ultros 导演问答",
+  "category": "style",
+  "origin": "有机通行 · Ultros 导演问答",
+  "lifecycle": "published"
+}

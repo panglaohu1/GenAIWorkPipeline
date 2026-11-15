@@ -1,0 +1,19 @@
+{
+  "id": "sk-oskar-big-form",
+  "name": "Oskar：大形由设计决定，细节由规则生长",
+  "icon": "⛰",
+  "stages": [
+    "oskar_plan",
+    "oskar_build",
+    "atlas_brief",
+    "plan"
+  ],
+  "required_tools": [
+    "blender"
+  ],
+  "instructions": "先确定岛屿剪影、主体体量与层次；台面必须有真实面积；建筑用不规则格网和可复用模块组织，结构与门窗道具分层；植被服从最终地表与道路边界。每次只改一处，用固定种子与机位比较。",
+  "description": "Oskar 知识库 · Bad North / Townscaper",
+  "category": "style",
+  "origin": "Oskar 知识库 · Bad North / Townscaper",
+  "lifecycle": "published"
+}

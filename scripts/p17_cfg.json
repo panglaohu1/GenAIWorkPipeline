@@ -1,0 +1,7 @@
+{"ortho_scale":7.0,"center_z":3.0,"island_w":0.62,"island_u":0.53,"island_v":1.05,"island_z_squash":0.86,
+ "villa_u":0.585,"villa_v":0.478,"villa_w":0.245,"villa_squash":0.52,
+ "fl_island":38000,"fl_meadow":30000,"fl_size":0.0215,"fl_size_m":0.028,"samples":64,"exposure":0.38,
+ "key":3.3,"fill":0.9,"rim":1.05,"sky_strength":0.72,"oak_clumps":72,
+ "coast_lu":-0.06,"coast_lv":0.615,"coast_ru":1.06,"coast_rv":0.700,"ray_y0":-20.0,
+ "cyp_h":1.25,"aq_dark":[0.16,0.185,0.20],"look":"AgX - Base Contrast",
+ "oak_leaf_rgb":[0.285,0.268,0.132],"uv_scale":1.0}

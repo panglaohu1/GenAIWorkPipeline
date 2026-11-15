@@ -1,0 +1,16 @@
+{
+  "id": "sk-human-scale",
+  "name": "人的尺度先行",
+  "icon": "📏",
+  "stages": [
+    "plan",
+    "model",
+    "assemble"
+  ],
+  "required_tools": [],
+  "instructions": "先定人的身高（1.7 m）、台阶高 0.3–0.45 m、门洞 2.2–2.6 m、栏杆 0.9–1.1 m，再定建筑与地形；宏伟靠少数统领轮廓，不是把每个构件放大。验收：场景里放一个 1.7 m 标尺人，门洞、台阶、路宽比例正确。",
+  "description": "组长 · 尺度与抵达",
+  "category": "style",
+  "origin": "组长 · 尺度与抵达",
+  "lifecycle": "published"
+}

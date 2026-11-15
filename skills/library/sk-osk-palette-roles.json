@@ -1,0 +1,22 @@
+{
+  "id": "sk-osk-palette-roles",
+  "name": "颜色按语义角色取，从一个色彩空间里采样",
+  "icon": "🎨",
+  "stages": [
+    "plan",
+    "oskar",
+    "review"
+  ],
+  "required_tools": [],
+  "instructions": "先给受光岩、阴面岩、湿岩脚、草、林、屋顶、墙、水、雾分配色彩角色，再从共享节点派生变化：同一特征的颜色是一块色域（节点—渐变—三角），实例在域内取点，不是每块随机抽色。主题街区可成片同色。目标图采样带光照，不直接当材质本色。验收：灰阶下主次清楚；同类物体色相统一而有变化；没有跳出调色板的颜色。",
+  "description": "作者 2023-10 的调色工具用色节点、渐变和三角色域；Townscaper 让街区按主题成片配色。",
+  "category": "style",
+  "origin": "Oskar 内置资料库（agents/knowledge/oskar/library）· 2026-10-11 提炼",
+  "evidence": [
+    "lib-b662f7bf8bc4 调色、打包与地图表达",
+    "lib-xposts X 原帖 2023-10-11",
+    "lib-b68d6719c85d The Story of Townscaper 15:17–15:37"
+  ],
+  "lifecycle": "draft",
+  "author_agent": "oskar"
+}

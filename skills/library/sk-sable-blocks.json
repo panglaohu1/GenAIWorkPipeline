@@ -1,0 +1,16 @@
+{
+  "id": "sk-sable-blocks",
+  "name": "Sable：先空间与大色块",
+  "icon": "🎨",
+  "stages": [
+    "plan",
+    "concept",
+    "model"
+  ],
+  "required_tools": [],
+  "instructions": "先用平色大块把空间关系、地标、层次立住：远中近各一种明度；在灰度缩略图里能看出主地标和抵达路线后，才允许加轮廓线、材料结构线和稀疏细节。验收：缩成 128px 灰度图，主地标仍是最突出的形。",
+  "description": "Greg team 共同练习（Sable 两图对照，GDC 2022 07:27–09:57）",
+  "category": "style",
+  "origin": "Greg team 共同练习（Sable 两图对照，GDC 2022 07:27–09:57）",
+  "lifecycle": "published"
+}

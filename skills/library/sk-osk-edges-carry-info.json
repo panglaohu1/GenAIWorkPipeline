@@ -1,0 +1,21 @@
+{
+  "id": "sk-osk-edges-carry-info",
+  "name": "信息放在交界处，区域内部保持安静",
+  "icon": "🪨",
+  "stages": [
+    "oskar",
+    "model",
+    "review"
+  ],
+  "required_tools": [],
+  "instructions": "画面细节集中在台缘、草岩交界、崖肩转折和水线：台缘用下垂草唇和一圈灌丛带，岩面裂缝只放在转折处；台面内部、平坦草地和大片海面保持安静，只用三阶明度的大团块。禁止全表面均匀撒噪声、重复裂纹或散点草。验收：同机位白模下交界处能读出层次，内部无高频碎点；裂纹不在各面机械重复。",
+  "description": "Bad North 的观感来自少而有效的交界细节：区域内部降低纹理强度，信息放在可走面与崖壁、草与岩相遇处。",
+  "category": "style",
+  "origin": "Oskar 内置资料库（agents/knowledge/oskar/library）· 2026-10-11 提炼",
+  "evidence": [
+    "lib-362b24312fa4 Developing the Bad North Look 02:40–03:13、28:30–29:50",
+    "lib-9d8e7b8e5c73 EPC2018 26:56–29:50"
+  ],
+  "lifecycle": "draft",
+  "author_agent": "oskar"
+}

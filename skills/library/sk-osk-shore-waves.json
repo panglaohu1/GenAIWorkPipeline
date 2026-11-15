@@ -1,0 +1,24 @@
+{
+  "id": "sk-osk-shore-waves",
+  "name": "岸浪：没有海面网格，浪是一圈圈各自循环的带",
+  "icon": "🌊",
+  "stages": [
+    "plan",
+    "oskar",
+    "model",
+    "review"
+  ],
+  "required_tools": [],
+  "instructions": "海本身不建网格，用背景色+投影表现；信息全在岸线。生成步骤：岸线（陆水分界）→ 沿岸法线外推、再迭代平滑几轮得到浪的起点线 → 在两线之间生成大量相互重叠的浪带，每条有自己的周期，从外线涌到岸线再回退一点；顶点烘焙入射方向、出射方向和时间偏移，由循环顶点动画驱动（崖前浪会回弹）。另用一张水面遮罩在礁石周围加泡沫。倒影可用一叠平面采样 SDF，不做写实反射。验收：远景沿白浪能读出岛形；浪起点线平滑不打结；运行时浪有进有退而不只是透明度闪烁。 引擎现状：已有岸外 1–2 圈平行波纹与泡沫；浪带的生成与循环动画、泡沫遮罩尚未实现，写进限制。",
+  "description": "作者 2024-10-25 Shoreline waves 两条及回复；2025-11-19 looping vertex shader / There is no main ocean mesh；2024-02-16 SDF 叠平面倒影。 关键词：海边、海岸、岸边、海浪、波浪、浪花、白浪、泡沫、海面、海洋、礁石、倒影",
+  "category": "style",
+  "origin": "Oskar 内置资料库（agents/knowledge/oskar/library）· 2026-10-22 精读 18 条帖子提炼",
+  "evidence": [
+    "lib-planet-threads-20261022 https://x.com/OskSta/status/1849730611964973481",
+    "lib-planet-threads-20261022 https://x.com/OskSta/status/1849732997945110651",
+    "lib-planet-threads-20261022 https://x.com/OskSta/status/1991101097818403263",
+    "lib-planet-threads-20261022 https://x.com/OskSta/status/1758250248483278925"
+  ],
+  "lifecycle": "draft",
+  "author_agent": "oskar"
+}

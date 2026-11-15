@@ -1,0 +1,23 @@
+{
+  "id": "sk-osk-reach-from-entrance",
+  "name": "可达性从入口长出来：先锁通路再生成",
+  "icon": "🚶",
+  "stages": [
+    "plan",
+    "oskar",
+    "assemble",
+    "review"
+  ],
+  "required_tools": [],
+  "instructions": "先确定入口（码头、城门、桥头、上岸点），用 path 原语写出主路及起止层（levels）和净空 clear，高差交给引擎做台阶堤道；再安排其余体量。区分可走区与纯景观：海中独立岩柱是风景，不要为了连通把它们连成步道，也不要因不可走而删掉。邻接合法≠能走到。验收：每个可走台地从入口有连续路径；门洞后面不是墙；路径净空不被建筑、树、城垛挡住。",
+  "description": "Bad North 每个模块带导航连接，从已知可达点出发优先放能扩大可达区的模块；仅靠事后过滤会丢弃大量关卡。",
+  "category": "style",
+  "origin": "Oskar 内置资料库（agents/knowledge/oskar/library）· 2026-10-11 提炼",
+  "evidence": [
+    "lib-9d8e7b8e5c73 EPC2018 18:48–22:58",
+    "lib-79097f75cc66 从研究到可验证样区",
+    "lib-ac6c254e3f2e Landscapes of Hex and Square 31:11–34:33"
+  ],
+  "lifecycle": "draft",
+  "author_agent": "oskar"
+}

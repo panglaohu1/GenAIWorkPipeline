@@ -1,0 +1,14 @@
+{
+ "id": "swamp-lake",
+ "name": "莫比斯原初湖沼 V2",
+ "mode": "oskar",
+ "description": "莫比斯原初湖沼鸟瞰：圆形下沉湖盆，中央一棵巨大古树从湖心升起；湖面有睡莲、木制维修码头与小帆船；湖盆外围一圈石板环形步道和石阶，环道边种一圈绿冠大树与铜色球形路灯；外侧是蓝灰色崖壁；右后方一道弧形连拱高架桥环绕；左前和右前各有一座透明浅蓝晶柱塔，塔身套着金铜色圆形观景笼和粉色花瓣檐。",
+ "target": "inputs/target-swamp-lake.png",
+ "source": "TigerMessenger assets/concepts/moebius-swamp/target-v2-existing-layout.png 上半幅鸟瞰（用户确认的 V2 目标，只读复制）",
+ "runs": [
+  "20260929-112608-05a3"
+ ],
+ "mode_history": [
+  "scene → oskar（2026-09-29：场景统一改用 Oskar 方法）"
+ ]
+}

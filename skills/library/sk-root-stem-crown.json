@@ -1,0 +1,17 @@
+{
+  "id": "sk-root-stem-crown",
+  "name": "植物：根—茎—冠连贯、成簇有功能",
+  "icon": "🌿",
+  "stages": [
+    "model",
+    "assemble"
+  ],
+  "required_tools": [
+    "blender"
+  ],
+  "instructions": "每类原创植物写清根怎么抓地、茎怎么承重、冠怎么遮阴，以及它在生态里的作用（遮蔽、栖息、标记水位）；成簇布置，簇与簇之间留空白和安全停留点，不随机撒点。验收：俯视图里能分出 3–5 个有间隔的植物簇。",
+  "description": "异星生态 · Aquamarine / Edena",
+  "category": "style",
+  "origin": "异星生态 · Aquamarine / Edena",
+  "lifecycle": "published"
+}

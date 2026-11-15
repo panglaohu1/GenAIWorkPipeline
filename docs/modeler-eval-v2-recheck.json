@@ -1,0 +1,427 @@
+{
+ "侦察飞机/A-bonsai": [
+  {
+   "round": 1,
+   "ledger": 4.0,
+   "dino": 0.5675,
+   "siglip": 0.8567,
+   "old_float_ok": false,
+   "new_float_major": [
+    "nose_cone",
+    "tail_wing_left",
+    "tail_wing_left_mirror"
+   ],
+   "checks_ok": false,
+   "sec": 237,
+   "compare": "/Users/panglaohu/Downloads/GenAIWorkPipeline/runs/20260927-055420-5dd5/jev/toy_scout_plane_r01_compare.jpg"
+  },
+  {
+   "round": 2,
+   "ledger": 4.0,
+   "dino": 0.5519,
+   "siglip": 0.8611,
+   "old_float_ok": false,
+   "new_float_major": [
+    "nose_cone",
+    "tail_wing_left",
+    "tail_wing_left_mirror"
+   ],
+   "checks_ok": false,
+   "sec": 366,
+   "compare": "/Users/panglaohu/Downloads/GenAIWorkPipeline/runs/20260927-055420-5dd5/jev/toy_scout_plane_r02_compare.jpg"
+  },
+  {
+   "round": 3,
+   "ledger": 4.0,
+   "dino": 0.4969,
+   "siglip": 0.8539,
+   "old_float_ok": false,
+   "new_float_major": [
+    "nose_cone",
+    "tail_wing_left",
+    "tail_wing_left_mirror"
+   ],
+   "checks_ok": false,
+   "sec": 335,
+   "compare": "/Users/panglaohu/Downloads/GenAIWorkPipeline/runs/20260927-055420-5dd5/jev/toy_scout_plane_r03_compare.jpg"
+  },
+  {
+   "round": 4,
+   "ledger": 4.0,
+   "dino": 0.5428,
+   "siglip": 0.8652,
+   "old_float_ok": false,
+   "new_float_major": [
+    "nose_cone",
+    "tail_wing_left",
+    "tail_wing_left_mirror"
+   ],
+   "checks_ok": false,
+   "sec": 326,
+   "compare": "/Users/panglaohu/Downloads/GenAIWorkPipeline/runs/20260927-055420-5dd5/jev/toy_scout_plane_r04_compare.jpg"
+  },
+  {
+   "round": 5,
+   "ledger": 4.0,
+   "dino": 0.5677,
+   "siglip": 0.869,
+   "old_float_ok": false,
+   "new_float_major": [
+    "nose_cone",
+    "tail_wing_left",
+    "tail_wing_left_mirror"
+   ],
+   "checks_ok": false,
+   "sec": 304,
+   "compare": "/Users/panglaohu/Downloads/GenAIWorkPipeline/runs/20260927-055420-5dd5/jev/toy_scout_plane_r05_compare.jpg"
+  },
+  {
+   "round": 6,
+   "ledger": 4.0,
+   "dino": 0.54,
+   "siglip": 0.86,
+   "old_float_ok": false,
+   "new_float_major": [
+    "nose_cone",
+    "tail_wing_left",
+    "tail_wing_left_mirror"
+   ],
+   "checks_ok": false,
+   "sec": 193,
+   "compare": "/Users/panglaohu/Downloads/GenAIWorkPipeline/runs/20260927-055420-5dd5/jev/toy_scout_plane_r06_compare.jpg"
+  }
+ ],
+ "侦察飞机/C-qwen38": [
+  {
+   "round": 1,
+   "ledger": 4.2,
+   "dino": 0.7469,
+   "siglip": 0.8898,
+   "old_float_ok": true,
+   "new_float_major": [],
+   "checks_ok": true,
+   "sec": 532,
+   "compare": "/Users/panglaohu/Downloads/GenAIWorkPipeline/runs/20260927-055420-f390/jev/toy_scout_plane_r01_compare.jpg"
+  },
+  {
+   "round": 2,
+   "ledger": 7.2,
+   "dino": 0.762,
+   "siglip": 0.8969,
+   "old_float_ok": true,
+   "new_float_major": [],
+   "checks_ok": true,
+   "sec": 394,
+   "compare": "/Users/panglaohu/Downloads/GenAIWorkPipeline/runs/20260927-055420-f390/jev/toy_scout_plane_r02_compare.jpg"
+  },
+  {
+   "round": 3,
+   "ledger": 5.8,
+   "dino": 0.5652,
+   "siglip": 0.8533,
+   "old_float_ok": true,
+   "new_float_major": [],
+   "checks_ok": true,
+   "sec": 410,
+   "compare": "/Users/panglaohu/Downloads/GenAIWorkPipeline/runs/20260927-055420-f390/jev/toy_scout_plane_r03_compare.jpg"
+  },
+  {
+   "round": 4,
+   "ledger": 7.2,
+   "dino": 0.6846,
+   "siglip": 0.8711,
+   "old_float_ok": true,
+   "new_float_major": [],
+   "checks_ok": true,
+   "sec": 329,
+   "compare": "/Users/panglaohu/Downloads/GenAIWorkPipeline/runs/20260927-055420-f390/jev/toy_scout_plane_r04_compare.jpg"
+  },
+  {
+   "round": 5,
+   "ledger": 7.6,
+   "dino": 0.6788,
+   "siglip": 0.8407,
+   "old_float_ok": true,
+   "new_float_major": [],
+   "checks_ok": true,
+   "sec": 391,
+   "compare": "/Users/panglaohu/Downloads/GenAIWorkPipeline/runs/20260927-055420-f390/jev/toy_scout_plane_r05_compare.jpg"
+  },
+  {
+   "round": 6,
+   "ledger": 6.2,
+   "dino": 0.6692,
+   "siglip": 0.8565,
+   "old_float_ok": true,
+   "new_float_major": [],
+   "checks_ok": true,
+   "sec": 474,
+   "compare": "/Users/panglaohu/Downloads/GenAIWorkPipeline/runs/20260927-055420-f390/jev/toy_scout_plane_r06_compare.jpg"
+  }
+ ],
+ "圣城旧城主殿/A-bonsai": [
+  {
+   "round": 1,
+   "ledger": 2.8,
+   "dino": 0.1972,
+   "siglip": 0.6896,
+   "old_float_ok": true,
+   "new_float_major": [],
+   "checks_ok": false,
+   "sec": 390,
+   "compare": "/Users/panglaohu/Downloads/GenAIWorkPipeline/runs/20260927-055420-1dcd/jev/mediterranean_white_palace_hall_r01_compare.jpg"
+  },
+  {
+   "round": 2,
+   "ledger": 3.2,
+   "dino": 0.1733,
+   "siglip": 0.6821,
+   "old_float_ok": true,
+   "new_float_major": [],
+   "checks_ok": false,
+   "sec": 358,
+   "compare": "/Users/panglaohu/Downloads/GenAIWorkPipeline/runs/20260927-055420-1dcd/jev/mediterranean_white_palace_hall_r02_compare.jpg"
+  },
+  {
+   "round": 3,
+   "ledger": 0.0,
+   "dino": 0.0891,
+   "siglip": 0.6446,
+   "old_float_ok": true,
+   "new_float_major": [],
+   "checks_ok": false,
+   "sec": 462,
+   "compare": "/Users/panglaohu/Downloads/GenAIWorkPipeline/runs/20260927-055420-1dcd/jev/mediterranean_white_palace_hall_r03_compare.jpg"
+  },
+  {
+   "round": 4,
+   "ledger": 0.0,
+   "dino": 0.0942,
+   "siglip": 0.6793,
+   "old_float_ok": false,
+   "new_float_major": [
+    "right_annex",
+    "right_annex_mirror"
+   ],
+   "checks_ok": false,
+   "sec": 417,
+   "compare": "/Users/panglaohu/Downloads/GenAIWorkPipeline/runs/20260927-055420-1dcd/jev/mediterranean_white_palace_hall_r04_compare.jpg"
+  },
+  {
+   "round": 5,
+   "ledger": 2.6,
+   "dino": 0.0394,
+   "siglip": 0.6319,
+   "old_float_ok": true,
+   "new_float_major": [],
+   "checks_ok": false,
+   "sec": 363,
+   "compare": "/Users/panglaohu/Downloads/GenAIWorkPipeline/runs/20260927-055420-1dcd/jev/mediterranean_white_palace_hall_r05_compare.jpg"
+  }
+ ],
+ "圣城旧城主殿/C-qwen38": [
+  {
+   "round": 1,
+   "ledger": 1.8,
+   "dino": 0.1119,
+   "siglip": 0.6775,
+   "old_float_ok": true,
+   "new_float_major": [],
+   "checks_ok": true,
+   "sec": 289,
+   "compare": "/Users/panglaohu/Downloads/GenAIWorkPipeline/runs/20260927-055420-07dc/jev/mediterranean_palace_main_hall_r01_compare.jpg"
+  },
+  {
+   "round": 2,
+   "ledger": 6.4,
+   "dino": 0.1362,
+   "siglip": 0.6477,
+   "old_float_ok": true,
+   "new_float_major": [],
+   "checks_ok": true,
+   "sec": 470,
+   "compare": "/Users/panglaohu/Downloads/GenAIWorkPipeline/runs/20260927-055420-07dc/jev/mediterranean_palace_main_hall_r02_compare.jpg"
+  },
+  {
+   "round": 3,
+   "ledger": 4.0,
+   "dino": 0.1473,
+   "siglip": 0.6696,
+   "old_float_ok": true,
+   "new_float_major": [],
+   "checks_ok": true,
+   "sec": 487,
+   "compare": "/Users/panglaohu/Downloads/GenAIWorkPipeline/runs/20260927-055420-07dc/jev/mediterranean_palace_main_hall_r03_compare.jpg"
+  },
+  {
+   "round": 4,
+   "ledger": 1.2,
+   "dino": 0.1145,
+   "siglip": 0.6846,
+   "old_float_ok": true,
+   "new_float_major": [],
+   "checks_ok": true,
+   "sec": 486,
+   "compare": "/Users/panglaohu/Downloads/GenAIWorkPipeline/runs/20260927-055420-07dc/jev/mediterranean_palace_main_hall_r04_compare.jpg"
+  },
+  {
+   "round": 5,
+   "ledger": 3.2,
+   "dino": 0.1434,
+   "siglip": 0.6671,
+   "old_float_ok": true,
+   "new_float_major": [],
+   "checks_ok": false,
+   "sec": 674,
+   "compare": "/Users/panglaohu/Downloads/GenAIWorkPipeline/runs/20260927-055420-07dc/jev/mediterranean_palace_main_hall_r05_compare.jpg"
+  },
+  {
+   "round": 6,
+   "ledger": 3.8,
+   "dino": 0.1095,
+   "siglip": 0.6504,
+   "old_float_ok": true,
+   "new_float_major": [],
+   "checks_ok": true,
+   "sec": 603,
+   "compare": "/Users/panglaohu/Downloads/GenAIWorkPipeline/runs/20260927-055420-07dc/jev/mediterranean_palace_main_hall_r06_compare.jpg"
+  }
+ ],
+ "侦察飞机/D-gemma31": [
+  {
+   "round": 1,
+   "ledger": 4.0,
+   "dino": 0.6125,
+   "siglip": 0.8589,
+   "old_float_ok": false,
+   "new_float_major": [
+    "nose_cone",
+    "main_wing_r",
+    "main_wing_r_mirror"
+   ],
+   "checks_ok": false,
+   "sec": 261,
+   "compare": "/Users/panglaohu/Downloads/GenAIWorkPipeline/runs/20260927-185706-dfde/jev/toy_recon_plane_r01_compare.jpg"
+  },
+  {
+   "round": 2,
+   "ledger": 4.0,
+   "dino": 0.616,
+   "siglip": 0.8796,
+   "old_float_ok": false,
+   "new_float_major": [
+    "nose_cone",
+    "main_wing_r",
+    "main_wing_r_mirror"
+   ],
+   "checks_ok": false,
+   "sec": 276,
+   "compare": "/Users/panglaohu/Downloads/GenAIWorkPipeline/runs/20260927-185706-dfde/jev/toy_recon_plane_r02_compare.jpg"
+  },
+  {
+   "round": 3,
+   "ledger": 0.0,
+   "dino": 0.7378,
+   "siglip": 0.9059,
+   "old_float_ok": false,
+   "new_float_major": [
+    "nose_cone",
+    "main_wing_r",
+    "main_wing_r_mirror"
+   ],
+   "checks_ok": false,
+   "sec": 360,
+   "compare": "/Users/panglaohu/Downloads/GenAIWorkPipeline/runs/20260927-185706-dfde/jev/toy_recon_plane_r03_compare.jpg"
+  },
+  {
+   "round": 4,
+   "ledger": 6.2,
+   "dino": 0.796,
+   "siglip": 0.9034,
+   "old_float_ok": true,
+   "new_float_major": [],
+   "checks_ok": true,
+   "sec": 239,
+   "compare": "/Users/panglaohu/Downloads/GenAIWorkPipeline/runs/20260927-185706-dfde/jev/toy_recon_plane_r04_compare.jpg"
+  },
+  {
+   "round": 5,
+   "ledger": 5.6,
+   "dino": 0.8074,
+   "siglip": 0.9001,
+   "old_float_ok": true,
+   "new_float_major": [],
+   "checks_ok": true,
+   "sec": 197,
+   "compare": "/Users/panglaohu/Downloads/GenAIWorkPipeline/runs/20260927-185706-dfde/jev/toy_recon_plane_r05_compare.jpg"
+  },
+  {
+   "round": 6,
+   "ledger": 1.6,
+   "dino": 0.7686,
+   "siglip": 0.9029,
+   "old_float_ok": true,
+   "new_float_major": [],
+   "checks_ok": true,
+   "sec": 386,
+   "compare": "/Users/panglaohu/Downloads/GenAIWorkPipeline/runs/20260927-185706-dfde/jev/toy_recon_plane_r06_compare.jpg"
+  }
+ ],
+ "圣城旧城主殿/D-gemma31": [
+  {
+   "round": 1,
+   "ledger": 0.2,
+   "dino": 0.1762,
+   "siglip": 0.6613,
+   "old_float_ok": true,
+   "new_float_major": [],
+   "checks_ok": true,
+   "sec": 340,
+   "compare": "/Users/panglaohu/Downloads/GenAIWorkPipeline/runs/20260927-185706-a013/jev/mediterranean_palace_main_hall_r01_compare.jpg"
+  },
+  {
+   "round": 2,
+   "ledger": 4.0,
+   "dino": 0.1576,
+   "siglip": 0.7046,
+   "old_float_ok": true,
+   "new_float_major": [],
+   "checks_ok": false,
+   "sec": 290,
+   "compare": "/Users/panglaohu/Downloads/GenAIWorkPipeline/runs/20260927-185706-a013/jev/mediterranean_palace_main_hall_r02_compare.jpg"
+  },
+  {
+   "round": 3,
+   "ledger": 0.0,
+   "dino": 0.1097,
+   "siglip": 0.6581,
+   "old_float_ok": true,
+   "new_float_major": [],
+   "checks_ok": true,
+   "sec": 393,
+   "compare": "/Users/panglaohu/Downloads/GenAIWorkPipeline/runs/20260927-185706-a013/jev/mediterranean_palace_main_hall_r03_compare.jpg"
+  },
+  {
+   "round": 4,
+   "ledger": 3.2,
+   "dino": 0.1581,
+   "siglip": 0.6509,
+   "old_float_ok": true,
+   "new_float_major": [],
+   "checks_ok": true,
+   "sec": 326,
+   "compare": "/Users/panglaohu/Downloads/GenAIWorkPipeline/runs/20260927-185706-a013/jev/mediterranean_palace_main_hall_r04_compare.jpg"
+  },
+  {
+   "round": 5,
+   "ledger": 1.0,
+   "dino": 0.1774,
+   "siglip": 0.6886,
+   "old_float_ok": true,
+   "new_float_major": [],
+   "checks_ok": false,
+   "sec": 367,
+   "compare": "/Users/panglaohu/Downloads/GenAIWorkPipeline/runs/20260927-185706-a013/jev/mediterranean_palace_main_hall_r05_compare.jpg"
+  }
+ ]
+}

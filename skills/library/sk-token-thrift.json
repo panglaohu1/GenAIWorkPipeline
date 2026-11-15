@@ -1,0 +1,16 @@
+{
+  "id": "sk-token-thrift",
+  "name": "省 token 的议事与评审",
+  "icon": "🪙",
+  "stages": [
+    "team_plaza",
+    "team_retro",
+    "review"
+  ],
+  "required_tools": [],
+  "instructions": "每人只讲自己领域，提案 ≤5 条、验收可检查；复盘只提一条下次要带上的规则；重复的意见合并，不复述别人说过的话。",
+  "description": "AgentsGroup2026 · token 北极星",
+  "category": "general",
+  "origin": "AgentsGroup2026 · token 北极星",
+  "lifecycle": "published"
+}

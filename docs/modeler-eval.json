@@ -1,0 +1,104 @@
+{
+ "侦察飞机/A-bonsai": {
+  "run": "20260926-075934-1bb0",
+  "status": "done",
+  "rounds": 6,
+  "scores": [
+   6.6,
+   3.6,
+   4.2,
+   5.8,
+   6.6,
+   3.6
+  ],
+  "best_round": 5,
+  "best_score": 6.6,
+  "sec_per_round": 402,
+  "build_errors": 0,
+  "best_compare": "/Users/panglaohu/Downloads/GenAIWorkPipeline/runs/20260926-075934-1bb0/jev/low_poly_recon_plane_r05_compare.jpg",
+  "routes": {
+   "plan": "main",
+   "blueprint": "main",
+   "observe": "main",
+   "decide": "main",
+   "patch": "main",
+   "verify": "main"
+  }
+ },
+ "侦察飞机/B-gemma": {
+  "run": "20260926-075934-a2ec",
+  "status": "done",
+  "rounds": 5,
+  "scores": [
+   7.2,
+   1.0,
+   5.6,
+   1.2,
+   5.8
+  ],
+  "best_round": 5,
+  "best_score": 5.8,
+  "sec_per_round": 193,
+  "build_errors": 0,
+  "best_compare": "/Users/panglaohu/Downloads/GenAIWorkPipeline/runs/20260926-075934-a2ec/jev/lowpoly_scout_plane_r05_compare.jpg",
+  "routes": {
+   "plan": "main",
+   "blueprint": "vision",
+   "observe": "main",
+   "decide": "main",
+   "patch": "vision",
+   "verify": "main"
+  }
+ },
+ "圣城旧城主殿/A-bonsai": {
+  "run": "20260926-075934-0fe6",
+  "status": "done",
+  "rounds": 5,
+  "scores": [
+   5.2,
+   2.2,
+   4.2,
+   2.8,
+   4.2
+  ],
+  "best_round": 1,
+  "best_score": 5.2,
+  "sec_per_round": 381,
+  "build_errors": 0,
+  "best_compare": "/Users/panglaohu/Downloads/GenAIWorkPipeline/runs/20260926-075934-0fe6/jev/mediterranean_white_palace_main_hall_r01_compare.jpg",
+  "routes": {
+   "plan": "main",
+   "blueprint": "main",
+   "observe": "main",
+   "decide": "main",
+   "patch": "main",
+   "verify": "main"
+  }
+ },
+ "圣城旧城主殿/B-gemma": {
+  "run": "20260926-075934-62e6",
+  "status": "done",
+  "rounds": 6,
+  "scores": [
+   6.8,
+   7.2,
+   7.2,
+   7.0,
+   3.8,
+   8.6
+  ],
+  "best_round": 6,
+  "best_score": 8.6,
+  "sec_per_round": 222,
+  "build_errors": 0,
+  "best_compare": "/Users/panglaohu/Downloads/GenAIWorkPipeline/runs/20260926-075934-62e6/jev/mediterranean_white_palace_main_hall_r06_compare.jpg",
+  "routes": {
+   "plan": "main",
+   "blueprint": "vision",
+   "observe": "main",
+   "decide": "main",
+   "patch": "vision",
+   "verify": "main"
+  }
+ }
+}

@@ -1,0 +1,15 @@
+{
+  "id": "sk-observe-abstract",
+  "name": "观察 → 抽象 → 构造",
+  "icon": "🔍",
+  "stages": [
+    "plan",
+    "concept"
+  ],
+  "required_tools": [],
+  "instructions": "先列真实地貌观察点（根系、水位印记、泥岸侵蚀、构造厚度、聚居痕迹），再把每点抽象成一个简洁轮廓或色块，最后落到一个可建造的构件。不照抄某一张参考图，不整片沙漠化。",
+  "description": "地域观察 · Caravan SandWitch 创始人访谈",
+  "category": "style",
+  "origin": "地域观察 · Caravan SandWitch 创始人访谈",
+  "lifecycle": "published"
+}

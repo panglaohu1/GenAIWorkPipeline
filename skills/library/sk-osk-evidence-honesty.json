@@ -1,0 +1,21 @@
+{
+  "id": "sk-osk-evidence-honesty",
+  "name": "作者原意、画面观察、项目推断分开写",
+  "icon": "📜",
+  "stages": [
+    "plan",
+    "review"
+  ],
+  "required_tools": [],
+  "instructions": "引用 Oskar 方法时注明来源层级：作者明确说过的、从画面看到的、本项目推断的，三者分开。研究读过≠引擎已实现，运行完成≠质量通过，学到规则≠视觉已改善。没有证据的不写成事实（例如树云 impostor 的具体图集、作者的私有 shader 参数）。验收：方案和复盘里每条关键结论都能追到资料库条目或本次截图。",
+  "description": "顾问规范：完整观看、分段观看、抽帧、仅文字分别记录，不宣称已还原作者引擎。",
+  "category": "style",
+  "origin": "Oskar 内置资料库（agents/knowledge/oskar/library）· 2026-10-11 提炼",
+  "evidence": [
+    "lib-7b31f902980a Oskar 方法研究顾问",
+    "lib-fd78db099c81 Oskar 学习真实状态",
+    "lib-464b3333faeb 研究与证据规范"
+  ],
+  "lifecycle": "draft",
+  "author_agent": "oskar"
+}

@@ -1,0 +1,14 @@
+{
+ "id": "crystal-city",
+ "name": "莫比斯水晶城 V10",
+ "mode": "oskar",
+ "description": "莫比斯风格水晶城全景：蓝色湖沼中若干陡峭深蓝岩岛，岛上立着成簇的透明浅蓝六棱晶柱塔（中央主塔群最高，左右各一组较小塔群），塔脚有玻璃穹顶生态舱与金铜色多层平台；岛间有细长高架轨道/廊桥相连；湖面散布低矮墨绿灌丛小岛与粉色伞状花树。整体配色深蓝+冰蓝+金铜点缀。",
+ "target": "inputs/target-crystal-city.png",
+ "source": "TigerMessenger assets/concepts/moebius-crystal-city/target-v10-moebius-blue.png 上半幅全景（只读复制）",
+ "runs": [
+  "20260929-112608-9e52"
+ ],
+ "mode_history": [
+  "scene → oskar（2026-09-29：场景统一改用 Oskar 方法）"
+ ]
+}

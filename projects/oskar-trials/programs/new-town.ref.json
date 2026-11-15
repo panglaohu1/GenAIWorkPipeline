@@ -1,0 +1,327 @@
+{
+ "scene": "高山圣城 · 新城（教堂与海港）",
+ "palette": {
+  "dome": "#C46A43",
+  "roof": "#C0643F"
+ },
+ "vegetation": "cypress",
+ "seed": 23,
+ "grid": {
+  "radius": 9,
+  "cell": 2.0
+ },
+ "level_h": 2.0,
+ "sea_level": 1,
+ "scene_type": "town",
+ "items": [
+  {
+   "type": "mass",
+   "kind": "rock",
+   "at": [
+    0.0,
+    0.12
+   ],
+   "size": [
+    1.75,
+    1.15
+   ],
+   "bottom": 0,
+   "top": 2,
+   "rot": -6
+  },
+  {
+   "type": "mass",
+   "kind": "rock",
+   "at": [
+    0.02,
+    0.33
+   ],
+   "size": [
+    1.45,
+    0.8
+   ],
+   "bottom": 0,
+   "top": 4,
+   "rot": 4
+  },
+  {
+   "type": "mass",
+   "kind": "rock",
+   "at": [
+    0.06,
+    0.49
+   ],
+   "size": [
+    1.05,
+    0.55
+   ],
+   "bottom": 0,
+   "top": 6,
+   "rot": -3
+  },
+  {
+   "type": "mass",
+   "kind": "rock",
+   "at": [
+    0.12,
+    0.62
+   ],
+   "size": [
+    0.62,
+    0.34
+   ],
+   "bottom": 0,
+   "top": 8,
+   "rot": 5
+  },
+  {
+   "type": "stack",
+   "at": [
+    -0.74,
+    0.42
+   ],
+   "tiers": [
+    {
+     "r": 0.24,
+     "top": 7
+    },
+    {
+     "r": 0.16,
+     "top": 10
+    }
+   ]
+  },
+  {
+   "type": "building",
+   "kind": "main",
+   "at": [
+    0.08,
+    0.63
+   ],
+   "size": [
+    0.3,
+    0.22
+   ],
+   "bottom": 8,
+   "top": 11,
+   "roof": "dome"
+  },
+  {
+   "type": "building",
+   "kind": "tower",
+   "at": [
+    0.33,
+    0.62
+   ],
+   "r": 0.065,
+   "bottom": 8,
+   "top": 15,
+   "roof": "dome"
+  },
+  {
+   "type": "building",
+   "kind": "house",
+   "at": [
+    -0.55,
+    -0.02
+   ],
+   "size": [
+    0.17,
+    0.12
+   ],
+   "bottom": 2,
+   "top": 4,
+   "roof": "hip"
+  },
+  {
+   "type": "building",
+   "kind": "house",
+   "at": [
+    -0.3,
+    -0.02
+   ],
+   "size": [
+    0.17,
+    0.12
+   ],
+   "bottom": 2,
+   "top": 4,
+   "roof": "hip"
+  },
+  {
+   "type": "building",
+   "kind": "house",
+   "at": [
+    0.3,
+    -0.02
+   ],
+   "size": [
+    0.17,
+    0.12
+   ],
+   "bottom": 2,
+   "top": 4,
+   "roof": "hip"
+  },
+  {
+   "type": "building",
+   "kind": "house",
+   "at": [
+    0.55,
+    -0.02
+   ],
+   "size": [
+    0.17,
+    0.12
+   ],
+   "bottom": 2,
+   "top": 4,
+   "roof": "hip"
+  },
+  {
+   "type": "building",
+   "kind": "house",
+   "at": [
+    -0.45,
+    0.22
+   ],
+   "size": [
+    0.16,
+    0.12
+   ],
+   "bottom": 4,
+   "top": 6,
+   "roof": "hip"
+  },
+  {
+   "type": "building",
+   "kind": "house",
+   "at": [
+    -0.2,
+    0.22
+   ],
+   "size": [
+    0.16,
+    0.12
+   ],
+   "bottom": 4,
+   "top": 6,
+   "roof": "hip"
+  },
+  {
+   "type": "building",
+   "kind": "house",
+   "at": [
+    0.32,
+    0.22
+   ],
+   "size": [
+    0.16,
+    0.12
+   ],
+   "bottom": 4,
+   "top": 6,
+   "roof": "hip"
+  },
+  {
+   "type": "building",
+   "kind": "house",
+   "at": [
+    0.55,
+    0.22
+   ],
+   "size": [
+    0.16,
+    0.12
+   ],
+   "bottom": 4,
+   "top": 6,
+   "roof": "hip"
+  },
+  {
+   "type": "building",
+   "kind": "house",
+   "at": [
+    -0.3,
+    0.42
+   ],
+   "size": [
+    0.15,
+    0.11
+   ],
+   "bottom": 6,
+   "top": 8,
+   "roof": "hip"
+  },
+  {
+   "type": "building",
+   "kind": "house",
+   "at": [
+    0.42,
+    0.42
+   ],
+   "size": [
+    0.15,
+    0.11
+   ],
+   "bottom": 6,
+   "top": 8,
+   "roof": "hip"
+  },
+  {
+   "type": "path",
+   "points": [
+    [
+     0.0,
+     -0.4
+    ],
+    [
+     0.02,
+     0.05
+    ],
+    [
+     0.04,
+     0.3
+    ],
+    [
+     0.06,
+     0.5
+    ]
+   ],
+   "levels": [
+    2,
+    8
+   ],
+   "clear": 2
+  },
+  {
+   "type": "bridge",
+   "kind": "arch",
+   "points": [
+    [
+     -0.84,
+     -0.72
+    ],
+    [
+     0.86,
+     -0.72
+    ]
+   ],
+   "level": 3,
+   "width": 0.07
+  },
+  {
+   "type": "waterfall",
+   "at": [
+    -0.74,
+    0.22
+   ],
+   "dir": [
+    0,
+    -1
+   ],
+   "width": 0.08
+  }
+ ],
+ "palette_base": "citadel"
+}

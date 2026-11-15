@@ -1,0 +1,14 @@
+{
+ "id": "holy-city-old-town",
+ "name": "高山圣城 · 旧城（崖上宫城）",
+ "mode": "oskar",
+ "description": "海边悬崖上的层叠白石宫城。验证复杂场景拆分组装：子资产分别建模 + 布局迭代。",
+ "target": "inputs/target-old-town.png",
+ "source": "用户提供的圣城目标图（左下分图裁剪），只读，不改 TigerMessenger",
+ "runs": [
+  "20260925-224829-8bd1"
+ ],
+ "mode_history": [
+  "scene → oskar（2026-09-29：场景统一改用 Oskar 方法）"
+ ]
+}

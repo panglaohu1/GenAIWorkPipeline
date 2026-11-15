@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 560" fill="none">
+ <defs>
+  <linearGradient id="sea" x1="190" y1="280" x2="530" y2="510" gradientUnits="userSpaceOnUse"><stop stop-color="#78a8b1"/><stop offset="1" stop-color="#3f6879"/></linearGradient>
+  <linearGradient id="wall" x1="330" y1="170" x2="450" y2="350" gradientUnits="userSpaceOnUse"><stop stop-color="#eee5cf"/><stop offset="1" stop-color="#899a8a"/></linearGradient>
+  <pattern id="grid" width="36" height="36" patternUnits="userSpaceOnUse" patternTransform="matrix(1 .5 -1 .5 360 80)"><path d="M36 0H0V36" stroke="#526569" stroke-opacity=".15"/></pattern>
+  <filter id="glow"><feGaussianBlur stdDeviation="3"/></filter>
+ </defs>
+ <ellipse cx="365" cy="442" rx="210" ry="49" fill="#000" opacity=".3"/>
+ <path d="M360 54 696 222 360 514 25 300Z" fill="url(#grid)"/>
+ <path d="M122 353 348 239 588 357 364 478Z" fill="url(#sea)" stroke="#668d7e" stroke-width="1.5"/>
+ <path d="M122 353v22l242 125v-22Z" fill="#183a37"/><path d="m364 478 224-121v21L364 500Z" fill="#122d2e"/>
+ <g stroke="#78a19c" stroke-opacity=".6"><path d="m158 355 65 34m215 54 72-39m-326-65 37 19m282 19 38-20m-242 94 38 19"/><path d="m191 329 12 6m331 34 15-8m-293 71 12 6"/></g>
+ <path d="m196 340 30-95 105-74 132 49 62 129-129 81-144-43Z" fill="#777f77"/>
+ <path d="m196 340 56 47 144 43-24-76-147-48Z" fill="#56675f"/><path d="m396 430 129-81-62-129-37 97-54 37Z" fill="#384e47"/>
+ <path d="m217 292 43-48 120-40 86 31 20 68-91 62-123-30Z" fill="#a1b378"/>
+ <path d="m254 296 69-42 112 41-65 44Z" fill="#d0c3a0"/>
+ <path d="m270 252 109-61 84 42v64l-100 62-93-48Z" fill="url(#wall)"/>
+ <path d="m363 295 100-62v64l-100 62Z" fill="#849689"/>
+ <path d="m270 252 93 43 100-62-84-42Z" fill="#f3ecda"/>
+ <path d="m286 241 89-50 73 38-87 53Z" fill="#b2bd96"/>
+ <path d="m324 222 54-31 38 21v61l-56 33-36-20Z" fill="#cbd4bc"/>
+ <path d="m360 246 56-34v61l-56 33Z" fill="#7d9684"/>
+ <path d="m311 220 65-39 54 29-69 42Z" fill="#914b3c"/>
+ <path d="m311 220 52-48 13 9 54 29-69 42Z" fill="#b26d50"/>
+ <path d="m369 169 20-12 24 13v55l-22 15-22-12Z" fill="#bdcdb3"/>
+ <path d="m391 184 22-14v55l-22 15Z" fill="#849b85"/>
+ <path d="m363 168 27-30 29 31-28 17Z" fill="#bc7957"/>
+ <path d="m289 302v-27q8-12 15 5v29m20 3v-26q8-12 15 5v28" fill="#536d5c"/>
+ <path d="m379 296 10-7v22l-10 6Zm24-14 10-7v23l-10 6Zm24-15 10-7v22l-10 7Z" fill="#394f43"/>
+ <path d="m378 202 6 3v11l-6-3m15-21 7-4v13l-7 4" stroke="#496450" stroke-width="3"/>
+ <path d="m250 299-22 43 64 33 43-38" stroke="#b7ae90" stroke-width="13"/>
+ <path d="m231 337 38 18m-33-27 38 18m-33-28 38 18m-31-27 38 18" stroke="#e1d0ac" stroke-width="2"/>
+ <g fill="#3c604a" stroke="#709258" stroke-width="1.5"><path d="m240 284 9-67 12 57-11 15Z"/><path d="m275 223 9-53 11 50-9 8Z"/><path d="m451 306 9-66 12 60-11 12Z"/><path d="m476 328 9-60 12 56-11 10Z"/></g>
+ <g stroke="#346772" stroke-width="1.1" stroke-dasharray="4 7" opacity=".65"><path d="M391 137V84H523"/><path d="m249 217-81-44H94"/><path d="m460 266 107-59h65"/><path d="m268 355-107 58H77"/></g>
+ <g fill="#23626c"><circle cx="391" cy="137" r="4"/><circle cx="249" cy="217" r="4"/><circle cx="460" cy="266" r="4"/><circle cx="268" cy="355" r="4"/></g>
+ <g fill="#526569" font-family="monospace" font-size="10" letter-spacing="2"><text x="527" y="88">FORM / 01</text><text x="54" y="162">GRAMMAR</text><text x="574" y="195">BUILD</text><text x="38" y="436">VERIFY / 04</text></g>
+</svg>

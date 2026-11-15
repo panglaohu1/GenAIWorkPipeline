@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GenAI Studio · 创作工作台</title>
+<link rel="stylesheet" href="/static/theme.css">
+<link rel="stylesheet" href="/static/style.css">
+<link rel="stylesheet" href="/static/scenecheck.css">
+<link rel="stylesheet" href="/static/workspace.css">
+<link rel="stylesheet" href="/static/assembly.css">
+<link rel="stylesheet" href="/static/atlas.css">
+<link rel="stylesheet" href="/static/team.css">
+<script type="module" src="https://cdn.jsdelivr.net/npm/@google/model-viewer@4/dist/model-viewer.min.js"></script>
+</head>
+<body>
+<header class="topbar">
+  <div class="brand"><span class="brand-mark">G↗</span> GENAI <span>STUDIO</span></div>
+  <div class="top-location">风格驱动的创作工作台 <span>/</span> <span id="pageLocation">总览</span></div>
+  <div class="top-account"><button id="resourceAccess" class="quiet">服务与算力</button><span id="connection">连接中</span><span id="userName"></span><button id="logoutBtn" class="quiet">退出</button></div>
+</header>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="nav-caption">WORKSPACE</div>
+    <button id="workspaceNav" class="nav-item selected"><span>◫</span> 工作台 <small>01</small></button>
+    <button id="agentNav" class="nav-item"><span>◇</span> 系统 Agent <small>02</small></button>
+    <button id="assemblyNav" class="nav-item"><span>⤳</span> 游戏组装 <small>03</small></button>
+    <button id="skillsNav" class="nav-item" onclick="showSkills()"><span>⚡</span> 技能库 <small>04</small></button>
+    <button id="newRunBtn" class="primary">＋ 发起创作</button>
+    <div class="sidebar-heading"><span>创作记录</span><span id="runCount"></span></div>
+    <input id="runSearch" class="search" type="search" aria-label="搜索创作记录" placeholder="搜索项目或任务…">
+    <div id="runFilters" class="filters compact"><button data-filter="all" class="on">全部</button><button data-filter="attention">待处理</button><button data-filter="active">进行中</button></div>
+    <div id="runList"></div>
+  </aside>
+  <main>
+    <div id="readOnlyNotice" class="notice" hidden>只读预览 · 可以查看真实项目与 Agent，执行操作已关闭。</div>
+    <section id="empty" class="workspace-home"></section>
+    <section id="agentsView" hidden></section>
+    <section id="assemblyView" hidden></section>
+    <section id="skillsView" hidden></section>
+    <section id="runView" hidden>
+      <div class="run-head">
+        <div>
+          <h1 id="runTitle"></h1>
+          <div class="meta" id="runMeta"></div>
+        </div>
+        <div class="controls">
+          <select id="modelSel" title="推理模型">
+            <option value="main">Qwen3.8 27B oQ6（本机）</option>
+          </select>
+          <button id="pauseBtn">暂停</button>
+          <button id="resumeBtn" hidden>继续</button>
+          <button id="cancelBtn" class="danger">取消</button>
+          <select id="retrySel" title="从某阶段重跑"></select>
+          <button id="retryBtn">重跑</button>
+          <button id="addToGameBtn" hidden>加入游戏组装 ↗</button>
+          <button id="inviteAgentBtn" data-action="invite-agent" data-mutate>邀请 Agent 审阅</button>
+          <button id="revealBtn" title="在访达中打开运行目录">目录</button>
+          <details class="more-actions"><summary>更多</summary><button id="deleteBtn" class="danger" title="目录移到 runs/.trash，可找回">删除此运行</button></details>
+        </div>
+      </div>
+      <div id="stepper" class="stepper"></div>
+      <div id="banner"></div>
+      <div id="runSummary"></div>
+      <div id="revisionBanner" class="notice" hidden></div>
+      <nav class="tabs" id="tabs">
+        <button data-tab="overview" class="active">任务简报</button>
+        <button data-tab="concept">目标与参考</button>
+        <button data-tab="model">资产与场景</button>
+        <button data-tab="game">游戏验收</button>
+        <button data-tab="scenecheck">场景验收</button>
+        <button data-tab="quality">质量检查</button>
+        <button data-tab="compare" hidden>原作与改版</button>
+        <button data-tab="log">执行日志</button>
+        <button data-tab="deliver">产物</button>
+      </nav>
+      <div id="tab-overview" class="tab"></div>
+      <div id="tab-concept" class="tab" hidden></div>
+      <div id="tab-model" class="tab" hidden></div>
+      <div id="tab-game" class="tab" hidden></div>
+      <div id="tab-quality" class="tab" hidden></div>
+      <div id="tab-compare" class="tab" hidden></div>
+      <div id="tab-log" class="tab" hidden>
+        <div class="filters" id="logFilters">
+          <button data-f="all" class="on">全部</button><button data-f="tool">工具调用</button>
+          <button data-f="review">验收</button><button data-f="error">错误</button><button data-f="compute">算力</button><button data-f="llm">模型</button>
+        </div>
+        <div id="log" class="log"></div>
+      </div>
+      <div id="tab-deliver" class="tab" hidden></div>
+      <div id="tab-scenecheck" class="tab" hidden></div>
+    </section>
+  </main>
+  <aside class="resource-rail"><div class="rail-heading"><span>执行资源</span><span class="small muted">COMPUTE</span></div><div id="computePanel"></div><div id="mem" class="mem"></div><div id="services" class="services"></div><button id="manageServices" class="rail-button">管理服务与日志 ↗</button><div class="rail-note">风格 Agent 制定创作规则，执行引擎负责构建。任务耗时与资源状态在此汇总。</div></aside>
+</div>
+<div id="toast" class="toast" role="status" hidden></div>
+
+<dialog id="newRunDlg">
+  <form id="newRunForm" method="dialog">
+    <h2>发起一次创作</h2><p class="muted small">选择风格 Agent，再定义你想创造的世界或资产。</p>
+    <label for="styleAgentSelect">引领创作的风格 Agent</label><select id="styleAgentSelect" name="style_agent"></select>
+    <div class="seg">
+      <label><input type="radio" name="mode" value="atlas" checked><span>多场景世界（Oskar 导演：目标图 → 逐场景趋近 → 整合）</span></label>
+      <label><input type="radio" name="mode" value="game"><span>完整游戏</span></label>
+      <label><input type="radio" name="mode" value="asset"><span>单个资产</span></label>
+      <label><input type="radio" name="mode" value="oskar"><span>场景（Oskar 风格 · WFC 引擎 → Godot）</span></label>
+      <label><input type="radio" name="mode" value="scene3d"><span>场景（图生 3D：参考图 → 拆资产 → Hunyuan3D 生成核心资产 → Blender 整理组装）</span></label>
+      <label><input type="radio" name="mode" value="scene"><span>复杂场景（旧：拆分组装）</span></label>
+    </div>
+    <label>所属项目（验证目录；选定后未上传参考图时自动使用项目目标图）</label>
+    <div class="row"><select name="project" id="projectSel"></select><input name="new_project" placeholder="或输入新项目名" style="max-width:220px"></div>
+    <label>需求描述</label>
+    <textarea name="brief" required placeholder="例如：竹林里的小老虎信使，收集散落的信件送到村口邮筒。低多边形、明亮色彩、第三人称。"></textarea>
+    <label>参考图（可选，会给模型看）</label>
+    <input type="file" name="references" multiple accept="image/*">
+    <div class="form-grid">
+      <div><label>推理模型</label><select name="model"><option value="main">Qwen3.8 27B oQ6（本机）</option></select></div>
+      <div><label>深度定位（场景：尺寸 / 摆放 / 相机 / 水面）</label><select name="depth_model"><option value="da3">Depth Anything 3 度量版（MoGe-2 内参）</option><option value="moge2">MoGe-2</option><option value="off">关闭（沿用 LLM 估计）</option></select></div>
+      <div><label>生图后端</label><select name="image_backend"><option value="flux">FLUX.1-schnell（快）</option></select></div>
+      <div><label>概念图候选数</label><input name="concept_candidates" type="number" min="1" max="8"></div>
+      <div><label>最多资产数</label><input name="max_assets" type="number" min="1" max="8" value="4"></div>
+      <div><label>建模最大轮数</label><input name="model_max_rounds" type="number" min="1" max="100"></div>
+      <div><label>停滞提前结束（连续 N 轮无进步）</label><input name="plateau_patience" type="number" min="2" max="50" placeholder="6"></div>
+      <div><label>场景组装最大轮数</label><input name="compose_max_rounds" type="number" min="1" max="50" placeholder="8"></div>
+      <div><label>图生 3D 候选数（每个核心资产）</label><input name="shape3d_candidates" type="number" min="1" max="6" placeholder="2"></div>
+      <div><label>验收通过分 (0-10)</label><input name="model_pass_score" type="number" min="1" max="10" step="0.5"></div>
+      <div><label>Godot 最大轮数</label><input name="godot_max_rounds" type="number" min="1" max="20"></div>
+      <div><label>世界场景数（多场景世界）</label><input name="atlas_scenes" type="number" min="2" max="6" placeholder="3"></div>
+      <div><label>世界形态（多场景世界）</label><select name="atlas_form"><option value="">由 Oskar 决定（默认小行星）</option><option value="planet">小行星：场景贴在同一颗球上，由地势相连</option><option value="archipelago">平面群岛</option></select></div>
+      <div><label>每个场景最多趋近轮数</label><input name="atlas_rounds" type="number" min="1" max="12" placeholder="4"></div>
+      <div><label>Oskar 迭代轮数</label><input name="oskar_rounds" type="number" min="0" max="12" placeholder="6"></div>
+      <div><label>Oskar 配色</label><select name="oskar_palette"><option value="">按读图选择（圣城 / 岩柱 / 自动）</option><option value="auto">始终从目标图自动取色</option></select></div>
+      <div><label>审批关卡</label><select name="approval"><option value="concept">概念图需人工确认</option><option value="">全自动</option></select></div>
+    </div>
+    <label class="check-row"><input type="checkbox" name="learn_after_run"> 创作通过交付门禁后，让 Agent 自动复盘并生成学习草稿</label>
+    <details style="margin-top:12px"><summary class="small">迭代已有资产 / 接入现有工程（如 TigerMessenger）</summary>
+      <label>源模型路径（.blend / .glb，会先复制到运行目录，原文件不改）</label>
+      <input name="source_model" placeholder="/Users/.../TigerMessenger/assets/models/xxx.blend">
+      <label class="row" style="color:var(--text)"><input type="checkbox" name="reference_as_target" style="width:auto"> 把上传的参考图直接作为目标图（不再生成概念图）</label>
+      <label>完成后接入的 Godot 工程目录（需人工确认，复制到 assets/pipeline/&lt;运行ID&gt;/）</label>
+      <input name="integrate_to" placeholder="/Users/.../TigerMessenger/godot">
+    </details>
+    <div class="dlg-actions">
+      <button type="button" id="newRunCancel">取消</button>
+      <button type="submit" class="primary">开始</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="agentDlg"><form id="agentForm"><div class="dialog-kicker">NEW STYLE AGENT</div><h2>定义一种新的创作风格</h2><p class="muted small">当前使用 Oskar 构建引擎。不同 Agent 通过自己的风格规则与学习版本引领创作。</p><label for="agentName">Agent 名称</label><input id="agentName" name="name" required maxlength="60" placeholder="例如：暮色群岛"><label for="agentDescription">风格描述</label><textarea id="agentDescription" name="description" maxlength="1000" placeholder="描述这个 Agent 的审美、擅长的世界与创作倾向。"></textarea><label for="agentPrinciples">初始风格规则 · 每行一条，最多 12 条</label><textarea id="agentPrinciples" name="principles" required placeholder="先确立连绵岛屿的剪影，再放置建筑。&#10;以暮蓝、灰紫和暖黄灯光建立色彩关系。"></textarea><div class="dlg-actions"><button type="button" onclick="document.querySelector('#agentDlg').close()">取消</button><button class="primary" type="submit">创建 Agent ↗</button></div></form></dialog>
+<dialog id="skillDlg"><form id="skillForm"><div class="dialog-kicker">SKILL</div><h2 id="skillDlgTitle">新建技能</h2><p class="muted small">写清楚怎么做、怎么验收；新建和修改后都是草稿，在技能库审核发布后才会被调用。</p><div class="cfg-row"><label class="grow">技能名<input name="name" required maxlength="60"></label><label>图标<input name="icon" maxlength="4" style="width:5em"></label></div><label>一句话说明 / 来源<input name="description" maxlength="300"></label><label>做法与验收 · 最多 4000 字<textarea name="instructions" required maxlength="4000" rows="7"></textarea></label><fieldset><legend>适用阶段</legend><div id="skillStages" class="check-grid"></div></fieldset><fieldset><legend>依赖工具（被关掉时不调用）</legend><div id="skillTools" class="check-grid"></div></fieldset><p id="skillError" role="alert"></p><div class="dlg-actions"><button type="button" onclick="document.querySelector('#skillDlg').close()">取消</button><button class="primary" type="submit">保存 ↗</button></div></form></dialog>
+<dialog id="agentWizDlg"><form id="agentWizForm"><div class="dialog-kicker">NEW AGENT · 四步向导</div><h2>添加一个 Agent</h2><div id="agentWizBody"></div><p id="agentWizError" role="alert"></p><div class="dlg-actions"><button type="button" onclick="document.querySelector('#agentWizDlg').close()">取消</button><button type="button" id="wizBack" onclick="wizMove(-1)">← 上一步</button><button class="primary" type="submit" id="wizNext">下一步 →</button></div></form></dialog>
+<dialog id="learnDlg"><form id="learnForm"><div class="dialog-kicker">RESEARCH & REFLECT</div><h2>给 Agent 一次研究任务</h2><p class="muted small">从已有参考资料与选定的创作记录提炼规则。完成后生成草稿，审核应用后才影响新任务。</p><label for="learningBrief">本次研究重点</label><textarea id="learningBrief" name="brief" required placeholder="例如：比较建筑层次与通路设计，保留有效规律，归纳失败原因。"></textarea><fieldset id="learningSourceField"><legend>本次学习资料 · 可选，最多 8 份</legend><div id="learningSources"></div></fieldset><label for="learningRuns">历史创作 · 可选，最多 5 个（⌘ / Ctrl 多选）</label><select id="learningRuns" name="runs" multiple size="5"></select><div class="dlg-actions"><button type="button" onclick="document.querySelector('#learnDlg').close()">取消</button><button class="primary" type="submit">安排研究 ↗</button></div></form></dialog>
+
+<dialog id="consultDlg"><form id="consultForm"><div class="dialog-kicker">INVITE A STYLE ADVISOR</div><h2>邀请 Agent 审阅作品</h2><p id="consultTarget" class="muted small"></p><p class="muted small">保存当前方案、验收记录与最多三张渲染样本，由选定 Agent 提出修改方案。原作会保留。</p><label for="consultAgent">邀请哪位顾问</label><select id="consultAgent" name="agent"></select><fieldset><legend>审阅范围</legend><div id="consultAreas"></div></fieldset><label for="consultBrief">希望怎样改进</label><textarea id="consultBrief" name="brief" required maxlength="4000" placeholder="例如：让角色轮廓更鲜明，装备层次更清晰，同时保留目前的低多边形风格。"></textarea><label for="consultPreserve">必须保留什么 · 可选</label><textarea id="consultPreserve" name="preserve" maxlength="2000" placeholder="例如：保留角色身份、主要配色和现有关卡动线。"></textarea><p id="consultError" role="alert"></p><div class="dlg-actions"><button type="button" onclick="document.querySelector('#consultDlg').close()">取消</button><button class="primary" type="submit">邀请并生成提案 ↗</button></div></form></dialog>
+
+<dialog id="sourceDlg"><form id="sourceForm"><div class="dialog-kicker">RESEARCH LIBRARY</div><h2>导入学习资料</h2><p class="muted small">保存资料正文与出处。链接用于追溯，系统不会自动访问网页。</p><label for="sourceTitle">资料标题</label><input id="sourceTitle" name="title" required maxlength="160" placeholder="例如：角色轮廓与装备层次的研究笔记"><label for="sourceUrl">原始来源链接 · 可选</label><input id="sourceUrl" name="url" type="url" maxlength="2000" placeholder="https://…"><label for="sourceFile">从文件读取 · UTF-8 .md / .txt，最多 64 KB</label><input id="sourceFile" type="file" accept=".md,.txt,text/plain,text/markdown"><label for="sourceText">资料正文 · 最多 8000 字</label><textarea id="sourceText" name="text" required maxlength="8000" rows="10" placeholder="粘贴资料摘录、作品分析或自己的观察，保留必要的上下文。"></textarea><p id="sourceError" role="alert"></p><div class="dlg-actions"><button type="button" onclick="document.querySelector('#sourceDlg').close()">取消</button><button type="submit" class="primary">保存资料 ↗</button></div></form></dialog>
+
+<dialog id="runActionDlg" aria-labelledby="runActionTitle" aria-describedby="runActionDescription">
+  <form id="runActionForm">
+    <div class="dialog-kicker">TASK CONTROL</div>
+    <h2 id="runActionTitle"></h2>
+    <p id="runActionTarget"></p><p id="runActionId" class="small muted"></p>
+    <p id="runActionDescription"></p>
+    <p id="runActionError" role="alert"></p>
+    <div class="dlg-actions"><button type="button" id="runActionKeep">继续保留</button><button type="submit" id="runActionSubmit" class="danger" data-mutate></button></div>
+  </form>
+</dialog>
+
+<dialog id="svcDlg">
+  <h2>服务</h2>
+  <div id="svcBody"></div>
+  <div class="dlg-actions"><button type="button" onclick="this.closest('dialog').close()">关闭</button></div>
+</dialog>
+
+<dialog id="lightbox"><button type="button" class="lb-close" title="关闭 (Esc)">✕</button><img id="lightboxImg" alt="" title="点击关闭"></dialog>
+
+<script src="/static/app.js"></script>
+    <script src="/static/scenecheck.js"></script>
+<script src="/static/assembly.js"></script>
+<script src="/static/atlas.js"></script>
+<script src="/static/workspace.js"></script>
+<script src="/static/team.js"></script>
+<script src="/static/agentmgmt.js"></script>
+</body>
+</html>

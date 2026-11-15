@@ -1,0 +1,24 @@
+{
+  "id": "sk-osk-planet-stitch",
+  "name": "星球串联：投影、旅程带与三种连接地势",
+  "icon": "🪐",
+  "stages": [
+    "plan",
+    "assemble",
+    "review"
+  ],
+  "required_tools": [
+    "godot"
+  ],
+  "instructions": "多场景整合成一颗小星球：各场景按方位等距投影贴上球面，高度变半径、建筑朝外；场景沿一条倾斜旅程带排开，高潮放高纬度。相邻站不搭桥，按两侧岛缘高度选连接地势：落差大用阶梯台地，两端都高用山脊垭口，两端都低或需要喘息用低地地峡，用同一引擎生成并与岛缘齐平。验收：单站岛缘角距约 30° 内不过度弯折；连接处无缝无断崖；角色能沿旅程带走通。",
+  "description": "作者 2024 年把场景放到球体上并研究球面高山的单元松弛；本项目已有的星球整合规则。",
+  "category": "style",
+  "origin": "Oskar 内置资料库（agents/knowledge/oskar/library）· 2026-10-11 提炼",
+  "evidence": [
+    "lib-88e55c36bf8f 模块网格、球面松弛与语义边",
+    "lib-fc5a6b7b699d 球面场景连接",
+    "lib-xposts X 原帖 2024-03-15/18"
+  ],
+  "lifecycle": "draft",
+  "author_agent": "oskar"
+}

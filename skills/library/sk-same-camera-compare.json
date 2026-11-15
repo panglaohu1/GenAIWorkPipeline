@@ -1,0 +1,18 @@
+{
+  "id": "sk-same-camera-compare",
+  "name": "同机位对比验收",
+  "icon": "📷",
+  "stages": [
+    "review",
+    "model",
+    "oskar_build"
+  ],
+  "required_tools": [
+    "vision_review"
+  ],
+  "instructions": "任何视觉修改都在同一机位、同一光照下与上一版和目标图并排比较；先看大形与色块，再看线与细节；用数据（相似度、色族面积）说话，不凭一张静帧推断动画或通路已验证。",
+  "description": "流水线验收规范",
+  "category": "style",
+  "origin": "流水线验收规范",
+  "lifecycle": "published"
+}

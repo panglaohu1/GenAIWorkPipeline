@@ -1,0 +1,180 @@
+# GenAIWorkPipeline 配置。路径相对于项目根目录，除非是绝对路径。
+
+[console]
+host = "127.0.0.1"
+port = 8701
+
+[memory]
+# 64 GB 统一内存；以下为准入估算，并非操作系统级硬上限。
+gpu_budget_gb = 48
+engine_reserve_gb = 8   # 为 Blender/Godot 留出预算，模型服务总驻留估算上限为 40 GB
+
+[compute]
+# 单机重任务 FIFO 串行：模型可同时驻留，但受管理的推理/生图/分割/评分/MCP 调用不重叠。
+queue_timeout_s = 1800
+
+# ── 推理 ────────────────────────────────────────────────
+[llm.main]
+# 2026-10-24 起主力 = Qwen3.8-27B oQ6（6 比特 MLX）。Bonsai（同一模型的约 2 比特压缩版）、Sage-A1.5、Gemma 4 31B
+# 已移到外接盘 /Volumes/ORICO1T/modelbackup；A/B 结果：三个单独物件 DINO 全部高于 Bonsai（0.368/0.618/0.480 对 0.339/0.445/0.401）
+label = "Qwen3.8-27B oQ6 (MLX)"
+model_path = "models/llm/qwen3.8-27b-oq6"
+port = 8081
+mem_gb = 26          # oQ6 权重 22 GB + KV + MLX 缓冲
+autostart = true
+mlx_cache_limit_gb = 3
+mlx_memory_limit_gb = 26
+
+[router]
+# LLM 路由器：每种子任务用哪个模型（main = Qwen3.8-27B oQ6；需要 A/B 时在 [llm.<名字>] 加候选模型）。
+# 路由只决定“谁来做”，产出照样经过构建检查、硬性检查、台账评分与成对比较。
+# 新建运行可用 options.router 覆盖单个角色；控制台手动切换模型时所有角色都用所选模型。
+plan = "main"        # 方案规划
+decompose = "main"   # 场景拆分
+blueprint = "main"   # 蓝图创建（含 agent 模式的 Blender 编码）
+patch = "main"       # 蓝图/布局补丁
+observe = "main"     # 视觉观察（差异台账）、候选挑选、试玩评审
+verify = "main"      # 成对比较
+decide = "main"      # System One 置信度不足时的 LLM 复核
+godot = "main"       # Godot 编码
+
+[llm.prefix_cache]
+# 实测：APC 命中后解码走分页 KV 路径，~20k 上下文时解码 14 tok/s（完整预填充后为 32 tok/s）。
+# 本流水线每步生成大量代码，解码占主导，因此默认关闭；上下文改由 agent 压缩历史来控制。
+enabled = false
+memory_gb = 4
+checkpoint_entries = 16
+checkpoint_interval_tokens = 1024
+
+[llm.sampling]
+# Bonsai/Qwen3.8 推荐的思考模式采样
+temperature = 1.0
+top_p = 0.95
+top_k = 20
+max_tokens = 16384
+# 工具调用步骤用较小的思考预算以保持速度；规划/验收步骤用较大预算
+tool_step_max_tokens = 6144
+tool_step_thinking_budget = 2048
+request_timeout_s = 900
+
+# ── 生图 ────────────────────────────────────────────────
+[image]
+port = 8090
+mem_gb = 12
+default_backend = "flux"
+idle_unload_s = 600
+
+[image.flux]
+model_path = "models/image/flux1-schnell-mflux-4bit"
+base_model = "schnell"
+steps = 4
+width = 1024
+height = 1024
+
+# [image.qwen_image] 已于 2026-09-28 删除（从未调用；需要时用 scripts/fetch_models.py 的 qwen-image 组重新下载并恢复此节）
+
+# ── System One 决策（开源 Laya，本地离线；JEV 式差异迭代的类别决策）──
+[decision]
+backend = "llm"             # llm：只用 LLM（Bonsai）决策；laya：Laya 快速决策、置信度不足交给 LLM 复核（2026-09-28 停用：自主决策改善率 22%，低于 LLM 的 33%）
+model_path = "models/decision/laya-multilingual"
+port = 8095
+mem_gb = 2
+confidence_gate = 0.85      # 与 TigerMessenger 的 Jev 阈值一致
+autostart = true
+
+[metrics]
+# 客观评分：渲染图 vs 目标图的 SigLIP-2（语义/风格）+ DINOv2（结构/形状）相似度。
+# 用于同一资产内选冠军、判断“改好/改坏”；LLM 台账只负责指出“下一轮改什么”。
+enabled = true
+port = 8096
+mem_gb = 2
+model_root = "models/vision"
+dino_unit = 0.025     # 相似度变化的“一个单位”（按历史回放的轮间波动估计）
+siglip_unit = 0.015
+pass_min_dino = 0.25  # 通过线的客观下限：台账通过但 DINO 结构相似度低于此值不算通过（按回放校准，P1 掩码后再调）
+pass_min_siglip = 0.55  # 图生/组装备选：SigLIP 语义够且 DINO 不低于 pass_min_dino*0.5 也可过
+
+[sam]
+# 场景拆分：SAM 3（MLX）按文字提示找出每类子资产的全部实例（掩码 + 框 + 数量），
+# 取代 VLM 单次框选；子资产目标图 = 最具代表性实例的掩码抠图（灰底）。
+enabled = true
+port = 8097
+mem_gb = 6
+model_path = "models/vision/sam3-image"
+threshold = 0.3        # 实例置信度下限（插画风格下 SAM 分数普遍 0.3–0.45，实测 0.4 会漏掉岩岛和桥）
+max_instances = 30
+
+# ── 引擎 ────────────────────────────────────────────────
+[shape3d]
+# 图生 3D（借鉴「参考图 → 拆资产 → Tripo 生成核心资产 → Blender 摆放」，本地用 Hunyuan3D-2mini Turbo 代替 Tripo）
+port = 8098
+mem_gb = 10
+model_dir = "models/shape3d"
+steps = 5             # turbo 步数蒸馏版，5 步即可
+octree = 256          # 体素分辨率：256 够游戏资产，380 更细但更慢
+guidance = 5.0
+num_chunks = 20000
+max_faces = 20000     # 服务端先减到这个面数，Blender 再按资产预算精简
+candidates = 2        # 每个核心资产生成几个候选（不同种子），按客观相似度挑最像目标图的
+blueprint_rounds = 3  # 图生 3D 场景里，蓝图只搭地面/水面等大面积环境件，轮数压短
+patience = 2          # 蓝图连续 N 轮没有进步就结束
+compose_rounds = 4    # 多机位组装与评审的最大轮数
+min_crop_px = 256     # 参考裁剪图长边小于这个像素数时，先单独生成单物体资产图再做图生 3D
+terrain_rounds = 2    # 大面积地形交给 Oskar 引擎时的受限修改轮数（0 = 只按读图写的程序构建一次）
+
+[audio]
+# 音效：MOSS-SoundEffect（OpenMOSS，Apache-2.0）MLX 4-bit，文字描述 → 环境音 WAV；安装见 scripts/setup_audio.command
+port = 8099
+mem_gb = 4
+hf_home = "models/audio/hf"
+seconds = 10          # 每段环境音时长（秒）
+
+[blender]
+binary = "/Applications/Blender.app/Contents/MacOS/Blender"
+# true: 无界面后台 Blender；false: 打开 Blender 窗口，可实时观看建模过程
+headless = true
+worker_port = 9877
+render_engine = "BLENDER_EEVEE"   # 预览渲染；失败时退回 BLENDER_WORKBENCH
+render_size = 768
+
+[godot]
+binary = "/Applications/Godot.app/Contents/MacOS/Godot"
+run_seconds = 6
+screenshot_size = [1280, 720]
+
+# ── 流水线 ──────────────────────────────────────────────
+[pipeline]
+runs_dir = "runs"
+db_path = "data/pipeline.db"
+concept_candidates = 3        # 每个资产生成的目标图候选数
+# 建模方式：blueprint = LLM 输出结构化部件蓝图、确定性构建（快、稳，默认）；agent = LLM 逐步写 bpy 代码（灵活、慢）
+model_mode = "blueprint"
+model_max_rounds = 8          # 每个资产 Blender 建模-渲染-验收 最大轮数（上限，可在新建运行时改）
+plateau_patience = 6          # 冠军连续 N 轮没有被超越就提前结束（避免停滞时空耗算力）
+compose_max_rounds = 8        # 复杂场景模式：布局组装最大轮数
+model_pass_score = 7.5        # 蓝图多轮 JEV 视觉验收分（0-10）达到即通过
+image3d_pass_score = 5.0      # 图生 3D 台账通过线（一次生成+择优；历史中位~5.2，7.5 几乎不可达）
+deliver_min_score = 6.0       # 交付门槛：场景组装冠军台账分；客观 DINO/SigLIP 达标也可过（见 quality）
+godot_max_rounds = 6
+agent_max_steps = 24          # 单轮 agent 最多工具调用次数（轮间有独立评审反馈）
+# 需要人工在控制台确认的关卡（空列表 = 全自动）
+approval_gates = ["concept"]
+# 配色闭环：ΔE 改善优先；大幅降 ΔE 时放宽 DINO 回落容忍
+color_fix_max_steps = 4
+color_fix_dino_tol = 0.01
+color_fix_dino_tol_when_de = 0.05
+
+[capabilities]
+# 能力层（src/genai_pipeline/capabilities）。外部能力代码原样从 TigerInBamboo import（Node 子进程跑 bridge.mjs）：
+#   reacode  ：REACode 能力库（体素：石拱、崖顶悬垂、海中石柱、穿山隧道、海边灯塔、灯室光束、体积浅水、炊烟）
+#   workshop ：系统工坊（object 物件 / gscene 通用场景 / planet 球系统 的能力代码与验证）
+node = "node"          # 找不到时依次试 /opt/homebrew/bin/node、/usr/local/bin/node
+reacode = "/Users/panglaohu/Downloads/TigerInBamboo/townscaper-web/REACodeRefactoring/src/capabilities"
+workshop = "/Users/panglaohu/Downloads/TigerInBamboo/TigerMessenger/src/system-workshop"
+timeout_s = 60         # Watchdog：单次调用总时长（超时杀进程、重试一次）
+idle_s = 20            # Watchdog：心跳间隔上限
+experience_dir = "data/experience"
+# 管线里默认启用的能力（Router 即使没在需求里看到关键词也会选它们）；其余能力按需求描述里的关键词路由
+object_selected = ["object.spacing-relax"]
+gscene_selected = []
+voxel_selected = []

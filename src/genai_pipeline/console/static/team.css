@@ -1,0 +1,138 @@
+/* 智能体形态（OPC / 团队）与团队管理视图 */
+.form-badge {display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;border:1px solid var(--line);color:var(--muted)}
+.form-badge.team {background:var(--wait-bg);color:var(--wait);border-color:transparent}
+.form-badge.opc {background:var(--selected-bg);color:var(--accent);border-color:transparent}
+
+.team-intro h2,.opc-card h2 {margin:.2em 0 .5em}
+.team-flow,.opc-roles {display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.team-flow span,.opc-roles span {background:var(--panel-2);border-radius:10px;padding:8px 10px;font-size:13px;color:var(--muted)}
+.team-flow span b,.opc-roles span b {display:block;color:var(--text);font-size:14px}
+.team-flow i {color:var(--muted);font-style:normal}
+
+.team-roster {display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;margin:12px 0}
+.member-card {margin:0}
+.member-card.lead {border-color:var(--wait)}
+.member-head {display:flex;gap:10px;align-items:center;margin-bottom:6px}
+.member-head small {display:block;color:var(--muted)}
+.member-head em {font-style:normal;font-size:11px;background:var(--wait-bg);color:var(--wait);padding:1px 7px;border-radius:999px;margin-left:6px}
+.member-stages {display:flex;flex-wrap:wrap;gap:6px}
+.member-stages span {font-size:12px;border:1px solid var(--line);border-radius:999px;padding:1px 8px;color:var(--muted)}
+.member-stages span.own {background:var(--selected-bg);color:var(--accent);border-color:transparent}
+
+.team-ratchet .section-title {align-items:flex-start}
+.ratchet-stamp {text-align:right;min-width:150px}
+.ratchet-stamp b {display:block;font-size:22px;color:var(--accent)}
+.ratchet-stamp span {color:var(--muted);font-size:12px}
+.ratchet-history {margin:8px 0 0;padding-left:18px}
+.ratchet-history li small {display:block;color:var(--muted)}
+
+.team-run .banner textarea {flex:1 1 260px;min-width:200px}
+.speech {padding:6px 0;border-top:1px dashed var(--line)}
+.speech ul {margin:4px 0 2px;padding-left:18px}
+.speech small {color:var(--muted);display:block}
+.speech .score {font-weight:600;color:var(--accent);margin-left:6px}
+.plan-goal {display:flex;flex-direction:column;gap:2px;margin:10px 0}
+.plan-goal span {color:var(--muted);font-size:13px}
+.plan-table {width:100%;font-size:13px}
+.plan-table td {vertical-align:top}
+.votes {display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.vote {font-size:12px;padding:2px 8px;border-radius:999px;background:var(--panel-2)}
+.vote.f1,.vote.f2 {background:var(--err-bg);color:var(--err)}
+.vote.f4,.vote.f5 {background:var(--ok-bg);color:var(--ok)}
+.token-table {width:100%;font-size:13px}
+.token-table .bar {display:inline-block;height:6px;border-radius:3px;background:var(--accent);min-width:2px}
+.settlement .kv {grid-template-columns:auto 1fr}
+.token-table td:last-child {width:32%}
+
+/* Agent 配置、技能库、添加 Agent 向导 */
+.cfg-form .card {margin-bottom:12px}
+.cfg-row {display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;margin:8px 0}
+.cfg-row label {display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted);min-width:180px}
+.cfg-row label.grow,.cfg-row .grow {flex:1 1 260px}
+.cfg-grid {display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
+.cfg-grid label {display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted)}
+.autonomy-grid {display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px;margin:8px 0}
+.autonomy-card {display:flex;flex-direction:column;gap:4px;border:1px solid var(--line);border-radius:10px;padding:10px 12px;cursor:pointer;background:var(--panel)}
+.autonomy-card input {position:absolute;opacity:0;pointer-events:none}
+.autonomy-card b {color:var(--accent);font-size:16px}
+.autonomy-card span {font-size:13px;color:var(--muted)}
+.autonomy-card.selected {border-color:var(--accent);background:var(--selected-bg)}
+.skill-pick {display:flex;flex-wrap:wrap;gap:8px}
+.skill-chip {display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:999px;padding:4px 10px;font-size:13px;cursor:pointer;background:var(--panel)}
+.skill-chip:has(input:checked) {border-color:var(--accent);background:var(--selected-bg)}
+.skill-chip.off {opacity:.55}
+.skill-chip .quality-badge {font-size:11px;padding:0 6px}
+.tool-grid {display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px}
+.tool-card {display:flex;flex-direction:column;gap:4px;border:1px solid var(--line);border-radius:10px;padding:10px 12px;cursor:pointer}
+.tool-card:has(input:checked) {border-color:var(--accent);background:var(--selected-bg)}
+.tool-card span {font-size:13px;color:var(--muted)}
+.tool-card small span {display:inline-block;margin-right:4px;font-size:11px;border:1px solid var(--line);border-radius:999px;padding:0 6px}
+.member-cfg {display:grid;gap:10px}
+.member-cfg-row {border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.member-cfg-row .member-head {justify-content:space-between}
+.member-cfg-row .member-head > div {flex:1}
+.switch {font-size:13px;color:var(--muted);display:flex;gap:6px;align-items:center}
+.cfg-actions {position:sticky;bottom:0;display:flex;gap:10px;align-items:center;justify-content:flex-end;padding:12px;background:var(--bg);border-top:1px solid var(--line)}
+.cfg-actions .small {margin-right:auto}
+
+.skill-life {display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:6px 0 14px}
+.skill-life span {background:var(--panel-2);border-radius:10px;padding:6px 10px;font-size:12px;color:var(--muted)}
+.skill-life span b {display:block;color:var(--text);font-size:13px}
+.skill-life span.down {background:var(--err-bg)}
+.skill-life i {font-style:normal;color:var(--muted)}
+.skill-toolbar {display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;align-items:center;margin-bottom:10px}
+.skill-toolbar .search {max-width:320px}
+.skill-grid {display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
+.skill-card {margin:0;display:flex;flex-direction:column;gap:8px}
+.skill-card.degraded {opacity:.7}
+.skill-head {display:flex;gap:10px;align-items:flex-start}
+.skill-head > div {flex:1}
+.skill-head small {display:block;color:var(--muted)}
+.skill-icon {font-size:22px;line-height:1}
+.skill-body {font-size:13px;margin:0;display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;overflow:hidden}
+.skill-stats {display:flex;flex-wrap:wrap;gap:12px;font-size:12px;color:var(--muted)}
+.skill-stats b {color:var(--text)}
+.member-stages span.tool {background:var(--wait-bg);color:var(--wait);border-color:transparent}
+.skill-actions {display:flex;flex-wrap:wrap;gap:6px;margin-top:auto}
+.skill-actions button {font-size:12px;padding:4px 10px}
+.route-trial {margin-top:14px}
+.route-picked {padding-left:20px}
+.route-picked li {display:flex;gap:10px;align-items:center;padding:4px 0}
+.route-picked li span:first-child {flex:1}
+.quality-badge.info {background:var(--selected-bg);color:var(--accent)}
+.quality-badge.wait {background:var(--wait-bg);color:var(--wait)}
+.check-grid {display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:4px}
+.wiz-steps {display:flex;gap:6px;list-style:none;padding:0;margin:4px 0 12px}
+.wiz-steps li {flex:1;text-align:center;font-size:12px;padding:6px;border-radius:8px;background:var(--panel-2);color:var(--muted)}
+.wiz-steps li.active {background:var(--accent);color:var(--on-action)}
+.wiz-steps li.done {background:var(--selected-bg);color:var(--accent)}
+#agentWizDlg {width:min(760px,94vw)}
+#agentWizBody label {display:flex;flex-direction:column;gap:4px;margin:8px 0}
+.subagents .sub-group {margin-top:10px}
+.subagents ul {list-style:none;padding:0;margin:6px 0}
+.subagents li.sub {display:flex;gap:10px;align-items:center;padding:6px 0;border-top:1px dashed var(--line)}
+.subagents li.sub > span:nth-child(2) {flex:1}
+.subagents li.sub small {display:block;color:var(--muted)}
+.subagents li.sub time {color:var(--muted);font-size:12px;white-space:nowrap}
+.subagents li.sub.running .agent-avatar {outline:2px solid var(--wait)}
+.subagents li.sub.failed {color:var(--err)}
+.agent-avatar.sm {width:26px;height:26px;font-size:12px}
+.member-ledger td small {display:block;color:var(--muted);margin-top:4px}
+.member-ledger td small.warn {color:var(--warn)}
+.lead-tag {font-style:normal;font-size:11px;background:var(--wait-bg);color:var(--wait);padding:0 6px;border-radius:999px}
+.switch {white-space:nowrap}
+.member-ledger th:first-child,.member-ledger th:nth-child(2) {width:30%}
+.vstat {display:inline-block;font-size:11px;padding:0 7px;border-radius:999px;background:var(--panel-2);color:var(--muted);white-space:nowrap}
+.vstat.ok {background:var(--ok-bg);color:var(--ok)}
+.vstat.info {background:var(--selected-bg);color:var(--accent)}
+.vstat.warn {background:var(--warn-bg);color:var(--warn)}
+.deliv {margin-bottom:4px}
+.deliv small {display:block;color:var(--muted)}
+.next-round {padding-left:20px}
+.next-round li {margin:4px 0}
+.next-round small {color:var(--muted)}
+.findings {list-style:none;padding:0;margin:6px 0}
+.findings li {padding:5px 0;border-top:1px dashed var(--line);font-size:13px}
+.findings li small {display:block;color:var(--muted)}
+.findings .grade {display:inline-block;min-width:22px;text-align:center;font-size:11px;font-weight:600;border:1px solid var(--line);border-radius:4px;margin:0 6px}
+.team-research details {margin:6px 0}

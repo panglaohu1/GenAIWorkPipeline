@@ -1,0 +1,23 @@
+{
+  "id": "sk-osk-forest-as-mass",
+  "name": "植被按群落读：森林是一块，草坡连续",
+  "icon": "🌲",
+  "stages": [
+    "oskar",
+    "model",
+    "assemble",
+    "review"
+  ],
+  "required_tools": [],
+  "instructions": "树林作为连片的冠层色块处理，林间留空地，单株只在林缘露出轮廓；草地是连续面域、带圆润边缘，不是满地绿色点。植被只长在最终台面和缓坡上，避开道路、门口、城基和湿岩脚；海蚀岩柱保留裸岩。验收：远景读成“一片林、一块草”；根部贴合最终地表；路径净空无树；转动镜头时林冠不碎成闪烁的点。",
+  "description": "Bad North 的森林融合为整体色块，体素法线让侧光读出整体；2024 星球材料里也是连片林冠与宽草坡。",
+  "category": "style",
+  "origin": "Oskar 内置资料库（agents/knowledge/oskar/library）· 2026-10-11 提炼",
+  "evidence": [
+    "lib-362b24312fa4 Developing the Bad North Look 14:25–17:38",
+    "lib-0ebadbd13e8f 星球地形组织与河流导航",
+    "lib-f7bb607aecce 植被、云、线条与配色"
+  ],
+  "lifecycle": "draft",
+  "author_agent": "oskar"
+}

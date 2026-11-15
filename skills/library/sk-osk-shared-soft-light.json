@@ -1,0 +1,23 @@
+{
+  "id": "sk-osk-shared-soft-light",
+  "name": "共享低频光照：灯大、柔、基本不动",
+  "icon": "💡",
+  "stages": [
+    "assemble",
+    "review"
+  ],
+  "required_tools": [
+    "godot"
+  ],
+  "instructions": "静态环境、植被、角色和粒子采样同一套低频环境光/遮蔽，避免各自补色；阴影只留台缘和屋檐下，柔和、成大图案。夜景每个灯（门口、桥头、码头、巡逻兵）用大半径、柔和、无阴影的暖光，并尽量不动。验收：同一岩柱能遮暗自己的台面和植物；墙背不漏光；移动光源不闪烁；固定曝光下灰阶主次清楚。",
+  "description": "Bad North 把近似 AO 烘进低分辨率体积给单位/粒子/小网格共用；作者 2022 点光源实验说低分辨率光要大、软、相对静止。",
+  "category": "style",
+  "origin": "Oskar 内置资料库（agents/knowledge/oskar/library）· 2026-10-11 提炼",
+  "evidence": [
+    "lib-362b24312fa4 Developing the Bad North Look 19:49–22:26",
+    "lib-c1388d62a60f 表现、地图与工具研究",
+    "lib-b68d6719c85d The Story of Townscaper 16:49–17:44"
+  ],
+  "lifecycle": "draft",
+  "author_agent": "oskar"
+}

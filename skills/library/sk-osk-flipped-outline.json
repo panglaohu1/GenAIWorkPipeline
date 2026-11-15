@@ -1,0 +1,21 @@
+{
+  "id": "sk-osk-flipped-outline",
+  "name": "描边用翻转网格，逆光再加一层亮边",
+  "icon": "✏️",
+  "stages": [
+    "model",
+    "review"
+  ],
+  "required_tools": [],
+  "instructions": "轮廓线不用屏幕空间边缘检测，用翻转法线、略放大的外壳网格（flipped mesh）做 3D 描边，粗细可控、远近一致；看向太阳时再叠一层反向网格亮边，并被阴影遮罩，故意与暗描边形成两层。低模＋顶点着色器实现，成本低。验收：岛体、建筑、树冠外轮廓都有连续描边；逆光机位出现亮边而顺光不出现；描边不在内部碎面上乱闪。",
+  "description": "作者 2024-02-17 flipped mesh 3d outlines, like god intended；2024-01-29 backlit highlights 及回复。 关键词：描边、轮廓线、线条、逆光、亮边、勾线",
+  "category": "style",
+  "origin": "Oskar 内置资料库（agents/knowledge/oskar/library）· 2026-10-22 精读 18 条帖子提炼",
+  "evidence": [
+    "lib-planet-threads-20261022 https://x.com/OskSta/status/1758250248483278925",
+    "lib-planet-threads-20261022 https://x.com/OskSta/status/1751932427272909032",
+    "lib-planet-threads-20261022 https://x.com/OskSta/status/1751945034851570056"
+  ],
+  "lifecycle": "draft",
+  "author_agent": "oskar"
+}

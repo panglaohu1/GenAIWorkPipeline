@@ -1,0 +1,222 @@
+{
+ "scene": "莫比斯水晶城",
+ "palette": {
+  "rock": "#283D5F",
+  "rock_alt": "#455775",
+  "rock_dark": "#1F2D44",
+  "rock_top": "#394C6B",
+  "grass": "#405E6E",
+  "shrub": "#5F7268",
+  "sea": "#336EB7",
+  "foam": "#E2E9F2",
+  "stone": "#749AB1",
+  "stone_alt": "#8BB1C8",
+  "plaster": "#7FA9C2",
+  "roof": "#925D4D",
+  "dome": "#7696AC",
+  "window": "#3A3F4A",
+  "door": "#6B4A34",
+  "trim": "#5E7C90",
+  "cypress": "#495652",
+  "outline": "#171D2B",
+  "sky": "#9FB3C4",
+  "water": "#C2D3E7",
+  "sea_deep": "#244671",
+  "crystal": "#ABCEEA",
+  "crystal_alt": "#97C3E6",
+  "metal": "#B8894A",
+  "trunk": "#6B5238",
+  "canopy": "#667A6F"
+ },
+ "palette_base": "sea_stack",
+ "vegetation": "shrub",
+ "seed": 21,
+ "grid": {
+  "radius": 8,
+  "cell": 2.0
+ },
+ "level_h": 2.0,
+ "sea_level": 1,
+ "items": [
+  {
+   "type": "stack",
+   "at": [
+    0.05,
+    0.32
+   ],
+   "jitter": 0.2,
+   "tiers": [
+    {
+     "r": 0.3,
+     "top": 3
+    },
+    {
+     "r": 0.17,
+     "top": 7,
+     "shift": [
+      0.02,
+      0.04
+     ]
+    }
+   ]
+  },
+  {
+   "type": "stack",
+   "at": [
+    -0.56,
+    0.1
+   ],
+   "jitter": 0.2,
+   "tiers": [
+    {
+     "r": 0.2,
+     "top": 3
+    },
+    {
+     "r": 0.1,
+     "top": 8
+    }
+   ]
+  },
+  {
+   "type": "stack",
+   "at": [
+    0.62,
+    0.16
+   ],
+   "jitter": 0.2,
+   "tiers": [
+    {
+     "r": 0.18,
+     "top": 3
+    },
+    {
+     "r": 0.09,
+     "top": 7
+    }
+   ]
+  },
+  {
+   "type": "stack",
+   "at": [
+    -0.22,
+    -0.36
+   ],
+   "tiers": [
+    {
+     "r": 0.12,
+     "top": 2
+    }
+   ]
+  },
+  {
+   "type": "stack",
+   "at": [
+    0.3,
+    -0.42
+   ],
+   "tiers": [
+    {
+     "r": 0.1,
+     "top": 2
+    }
+   ]
+  },
+  {
+   "type": "stack",
+   "at": [
+    -0.7,
+    -0.46
+   ],
+   "tiers": [
+    {
+     "r": 0.08,
+     "top": 2
+    }
+   ]
+  },
+  {
+   "type": "crystal",
+   "at": [
+    0.0,
+    0.22
+   ],
+   "r": 0.11,
+   "top": 22
+  },
+  {
+   "type": "crystal",
+   "at": [
+    0.16,
+    0.36
+   ],
+   "r": 0.06,
+   "top": 15
+  },
+  {
+   "type": "crystal",
+   "at": [
+    -0.5,
+    0.02
+   ],
+   "r": 0.07,
+   "top": 15
+  },
+  {
+   "type": "crystal",
+   "at": [
+    0.58,
+    0.08
+   ],
+   "r": 0.07,
+   "top": 14
+  },
+  {
+   "type": "bridge",
+   "points": [
+    [
+     -0.95,
+     0.02
+    ],
+    [
+     -0.56,
+     0.1
+    ],
+    [
+     0.0,
+     0.22
+    ],
+    [
+     0.62,
+     0.16
+    ],
+    [
+     0.95,
+     0.28
+    ]
+   ],
+   "level": 6,
+   "width": 0.03,
+   "kind": "rail"
+  },
+  {
+   "type": "tree",
+   "at": [
+    -0.22,
+    -0.36
+   ],
+   "r": 0.04,
+   "height": 3
+  },
+  {
+   "type": "tree",
+   "at": [
+    0.3,
+    -0.42
+   ],
+   "r": 0.035,
+   "height": 3
+  }
+ ],
+ "scene_type": "fantasy"
+}

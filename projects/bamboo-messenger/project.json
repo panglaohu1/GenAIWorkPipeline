@@ -1,0 +1,11 @@
+{
+ "id": "bamboo-messenger",
+ "name": "竹林信使（完整游戏）",
+ "mode": "game",
+ "description": "小老虎信使收集 5 封信投递到红顶邮筒。验证全流程：规划→概念图→建模→Godot→试玩→交付。",
+ "target": "inputs/key-art.png",
+ "source": "流水线自行生成（FLUX 关键画面）",
+ "runs": [
+  "20260929-114515-e6d6"
+ ]
+}

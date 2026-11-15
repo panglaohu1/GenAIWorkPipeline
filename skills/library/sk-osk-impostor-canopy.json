@@ -1,0 +1,22 @@
+{
+  "id": "sk-osk-impostor-canopy",
+  "name": "树与云共用一套 impostor，按瓦片合簇",
+  "icon": "🌳",
+  "stages": [
+    "plan",
+    "oskar",
+    "model",
+    "review"
+  ],
+  "required_tools": [],
+  "instructions": "树冠和云不逐个建高模：先把树/云团渲成多角度（半球八面体）impostor，启动时生成；uv 与深度打包进贴图，转镜头时比普通 billboard 稳定。impostor 再转成距离场，用距离场在每一团边缘画短描边。树按瓦片合并成簇，簇实例化绘制，并按地形数据缩放。在 Blender/Godot 里的折中做法：同一组低多边形团块原型复用给树冠和云，按台面成片实例化，描边用翻转网格。验收：树冠与云的造型语言一致；转动镜头不闪烁；每团顶上有清楚但很短的描边。 引擎现状：林地由瓦片 WFC 成片生成（每格一棵大冠树），云在 Godot 里是低多边形团块；impostor 与距离场描边尚未实现，写进限制。",
+  "description": "作者 2024-10-24 octahedral impostors 及回复；2024-11-01 fluffy cloud shader 及回复（同一 impostor、启动时生成、距离场描边、按瓦片合簇实例化）。 关键词：树木、树林、森林、树冠、植被、云朵、云层、云海",
+  "category": "style",
+  "origin": "Oskar 内置资料库（agents/knowledge/oskar/library）· 2026-10-22 精读 18 条帖子提炼",
+  "evidence": [
+    "lib-planet-threads-20261022 https://x.com/OskSta/status/1849427564034498642",
+    "lib-planet-threads-20261022 https://x.com/OskSta/status/1852334860137849222"
+  ],
+  "lifecycle": "draft",
+  "author_agent": "oskar"
+}

@@ -1,0 +1,28 @@
+# 本地环境与模型（约 53 GB，不入库）
+.venv/
+envs/
+models/
+vendor/
+# 运行产物、数据库、日志（运行目录约 258 MB）
+runs/
+data/
+logs/
+projects/*/runs/
+muse/inbox/processed/
+# 其他
+__pycache__/
+*.pyc
+.DS_Store
+.claude/
+# Agent 原始学习资料库（含第三方帖子与媒体，约 170 MB），本地保存，不入库发布
+agents/knowledge/*/library/
+config/*.local.toml
+# 本机临时同步包、实验构建物与待清理归档
+_sync_mac_*
+_to_delete/
+build/
+artifacts/
+# 编辑器备份文件
+*.bak
+*.bak_*
+*.pre_*.py

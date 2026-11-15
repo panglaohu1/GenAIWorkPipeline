@@ -1,0 +1,15 @@
+{
+ "id": "oskar-trials",
+ "name": "Oskar 引擎试做（十二门徒 / 圣城城堡）",
+ "mode": "scene",
+ "description": "在本工作空间试做 Oskar 式配色与 WFC 建模；TigerMessenger 只读。",
+ "target": "inputs/target-sea-stacks.png",
+ "source": "TigerMessenger 目标图只读复制并裁剪主画面",
+ "runs": [
+  "20260928-181059-53a0",
+  "20260929-000832-0a89",
+  "20260929-080515-fe84",
+  "20260929-082514-68a0",
+  "20260929-082514-1b98"
+ ]
+}

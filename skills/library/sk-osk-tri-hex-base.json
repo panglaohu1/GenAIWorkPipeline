@@ -1,0 +1,24 @@
+{
+  "id": "sk-osk-tri-hex-base",
+  "name": "基础格：三角网 + 六边形对偶格，大模块先要地",
+  "icon": "⬡",
+  "stages": [
+    "plan",
+    "oskar",
+    "model",
+    "review"
+  ],
+  "required_tools": [],
+  "instructions": "Oskar 星球风格的基础格是三角网，玩家可见的格子是它的对偶——六边形（零星五/七边形），不是四边形。引擎已默认使用这种网格（程序 grid.kind 默认 hex；只有复刻旧 Townscaper 场景才写 \"quad\"）。自然地形写成 items 第一个 terrain 原语：peaks 定山峰位置与高度（广度优先从峰向外、越往外越低），plateaus 先给宫城、村落、广场这类大模块留平整台地（top = 建筑 bottom），forest / cliffs 控制林地和裸岩崖的比例，瓦片 WFC 保证相邻高差 ≤1、只有裸岩崖可以陡落、不留坑。建筑、路、桥、瀑布写在 terrain 后面；海蚀岩柱仍用 stack。验收：俯视能读出六边形格律；大模块完整落在预留台地上；林地和裸岩成片；没有四边形棋盘感。",
+  "description": "作者 2024-03-15：Just triangles, the dual is hexagons + occasional pentagon/heptagon；2024-01-29 先生成大模块所需网格；2024-06-06 瓦片拼装图。 关键词：六边形、蜂窝、三角形、网格、格子、地块、瓦片、星球、球面、地形",
+  "category": "style",
+  "origin": "Oskar 内置资料库（agents/knowledge/oskar/library）· 2026-10-22 精读 18 条帖子提炼",
+  "evidence": [
+    "lib-planet-threads-20261022 https://x.com/OskSta/status/1768627849529893109",
+    "lib-planet-threads-20261022 https://x.com/OskSta/status/1783792917183606829",
+    "lib-planet-threads-20261022 https://x.com/OskSta/status/1751932427272909032",
+    "lib-planet-threads-20261022 https://x.com/OskSta/status/1798310423554658732"
+  ],
+  "lifecycle": "draft",
+  "author_agent": "oskar"
+}

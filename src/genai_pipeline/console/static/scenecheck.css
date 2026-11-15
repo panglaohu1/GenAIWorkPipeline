@@ -1,0 +1,13 @@
+/* 场景验收页 */
+.sc-wrap { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 14px; margin-top: 10px; }
+@media (max-width: 960px) { .sc-wrap { grid-template-columns: 1fr; } }
+.sc-pane { min-width: 0; }
+.sc-cap { font-size: 12px; color: var(--muted, #6b7a8f); margin-bottom: 6px; letter-spacing: .02em; }
+.sc-pane img { width: 100%; border-radius: 10px; display: block; background: #0e1620; }
+.sc-viewer { width: 100%; aspect-ratio: 16 / 10; border: 0; border-radius: 10px; background: #0e1620; display: block; }
+.sc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 12px; margin-top: 10px; }
+.sc-thumb { margin: 0; }
+.sc-thumb img { width: 100%; border-radius: 9px; display: block; cursor: zoom-in; background: #eef2f7; }
+.sc-thumb.wide { grid-column: span 2; }
+@media (max-width: 720px) { .sc-thumb.wide { grid-column: span 1; } }
+.sc-thumb figcaption { font-size: 11.5px; color: var(--muted, #6b7a8f); margin-top: 5px; word-break: break-all; }

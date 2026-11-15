@@ -1,0 +1,16 @@
+{
+  "id": "sk-three-lines",
+  "name": "三类线条与远近层级",
+  "icon": "✒️",
+  "stages": [
+    "concept",
+    "model",
+    "assemble"
+  ],
+  "required_tools": [],
+  "instructions": "线分三类：外轮廓（最粗，保留到远景）、材料结构线（中，近中景）、稀疏细节线（细，只在近景）。远处线色随距离变淡，用深蓝灰墨线（如 #263E49）而不是纯黑；三角剖分边、叶片内部线一律不画。验收：近中远三张同机位截图，远景只剩剪影线。",
+  "description": "视觉规则 · Sable 距离渐变 / Rollerdrome 屏幕定宽线",
+  "category": "style",
+  "origin": "视觉规则 · Sable 距离渐变 / Rollerdrome 屏幕定宽线",
+  "lifecycle": "published"
+}

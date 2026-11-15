@@ -1,0 +1,1053 @@
+diff -ruN -x __pycache__ p0/scenario/core/api/catalog.py work/scenario/core/api/catalog.py
+--- p0/scenario/core/api/catalog.py	2026-10-24 11:49:06.422973878 +0800
++++ work/scenario/core/api/catalog.py	2026-10-24 11:48:50.358684923 +0800
+@@ -34,6 +34,7 @@
+ PATINA_MODELS = ("model_patina-material", "model_patina", "model_patina-material-extract")
+ DEFAULT_MODELS = {
+     "image": [
++        "model_local-flux-schnell",
+         "model_openai-gpt-image-2",
+         "model_google-gemini-3-1-flash",
+         "model_bytedance-seedream-5-0-pro",
+@@ -47,6 +48,7 @@
+         "model_kling-v3-omni-video",
+     ],
+     "3d": [
++        "model_local-hunyuan3d-2mini",
+         "model_meshy-7-txt23d",
+         "model_rodin-hyper3d-v2-5-text-to-3d",
+         "model_tripo-v3-1-image-to-3d",
+diff -ruN -x __pycache__ p0/scenario/core/api/local_backend/__init__.py work/scenario/core/api/local_backend/__init__.py
+--- p0/scenario/core/api/local_backend/__init__.py	1970-01-01 08:00:00.000000000 +0800
++++ work/scenario/core/api/local_backend/__init__.py	2026-10-24 11:45:42.432707618 +0800
+@@ -0,0 +1,16 @@
++# SPDX-FileCopyrightText: 2026 GenAIWorkPipeline local modifications
++# SPDX-License-Identifier: GPL-3.0-or-later
++"""Local backend: the Scenario REST surface served in-process, computed by local services.
++
++The extension keeps its SDK adapter, job store, coordinator and result checks unchanged.
++Only the HTTP transport underneath is swapped: every request the SDK sends to
++LOCAL_API_URL is answered by LocalTransport from a private state directory, and work is
++done by the GenAIWorkPipeline services on 127.0.0.1 (FLUX, Hunyuan3D, Qwen ...).
++Result files are served from the same state directory by LocalResultDownloader.
++No byte leaves the machine. No bpy.
++"""
++
++LOCAL_API_URL = "https://local-api.genai.invalid/v1"
++LOCAL_STORE_HOST = "local-store.genai.invalid"
++LOCAL_KEY = "local-pipeline"
++LOCAL_SECRET = "local-pipeline"
+diff -ruN -x __pycache__ p0/scenario/core/api/local_backend/catalog.py work/scenario/core/api/local_backend/catalog.py
+--- p0/scenario/core/api/local_backend/catalog.py	1970-01-01 08:00:00.000000000 +0800
++++ work/scenario/core/api/local_backend/catalog.py	2026-10-24 11:46:08.928709193 +0800
+@@ -0,0 +1,113 @@
++# SPDX-FileCopyrightText: 2026 GenAIWorkPipeline local modifications
++# SPDX-License-Identifier: GPL-3.0-or-later
++"""Local model records, in the shape of GET /models/{id}, each bound to a local provider.
++
++Record shape follows the captured Scenario model records (tests/fixtures/models). Only
++inputs a provider really honours are declared, so schema validation in the extension
++rejects anything the local service would silently ignore.
++"""
++
++OWNER = "proj_localpipeline00000000"
++AUTHOR = "apiu_localpipeline00000000"
++CREATED = "2026-10-24T00:00:00.000Z"
++
++
++def _num(name, label, *, default=None, lo=None, hi=None, group="Settings"):
++    item = {"name": name, "label": label, "type": "number", "group": group, "costImpact": False}
++    if default is not None:
++        item["default"] = default
++    if lo is not None:
++        item["min"] = lo
++    if hi is not None:
++        item["max"] = hi
++    return item
++
++
++def _record(identifier, name, description, capabilities, tags, inputs, provider):
++    return {
++        "id": identifier,
++        "userId": AUTHOR,
++        "authorId": AUTHOR,
++        "ownerId": OWNER,
++        "createdAt": CREATED,
++        "updatedAt": CREATED,
++        "name": name,
++        "shortDescription": description,
++        "type": "custom",
++        "privacy": "private",
++        "capabilities": list(capabilities),
++        "source": "other",
++        "status": "trained",
++        "trainingProgress": {},
++        "parameters": {},
++        "trainingImagesNumber": 0,
++        "trainingImagePairs": [],
++        "tags": list(tags) + ["local", "sc:local-compute"],
++        "collectionIds": [],
++        "exampleAssetIds": [],
++        "custom": True,
++        "accessRestrictions": 0,
++        "complianceMetadata": {
++            "enterpriseStatus": "Ready",
++            "dataProcessingComment": "localOnly",
++            "subProcessor": "None",
++            "modelProvider": "GenAIWorkPipeline (local)",
++            "maintainer": "Local",
++        },
++        "inputs": inputs,
++        "uiConfig": {},
++        # Not part of the Scenario record; stripped before a record is served.
++        "_provider": provider,
++    }
++
++
++MODELS = [
++    _record(
++        "model_local-flux-schnell",
++        "FLUX.1 schnell (local)",
++        "Text to image on this Mac: FLUX.1 schnell 4-bit via mflux, 4 steps.",
++        ["txt2img"],
++        ["Image", "FLUX"],
++        [
++            {"name": "prompt", "label": "Prompt", "type": "string", "required": {"always": True},
++             "costImpact": False, "parent": True},
++            _num("width", "Width", default=1024, lo=256, hi=2048),
++            _num("height", "Height", default=1024, lo=256, hi=2048),
++            _num("numInferenceSteps", "Steps", default=4, lo=1, hi=8),
++            _num("seed", "Seed", lo=0, hi=2147483647),
++        ],
++        "flux",
++    ),
++    _record(
++        "model_local-hunyuan3d-2mini",
++        "Hunyuan3D-2mini Turbo (local)",
++        "Single image to untextured mesh on this Mac: Hunyuan3D-2mini Turbo, 5 steps, GLB.",
++        ["img23d"],
++        ["3d", "Image to 3D", "Hunyuan3D"],
++        [
++            {"name": "image", "label": "Image", "type": "file", "kind": "image",
++             "description": "Single image for image-to-model.", "backgroundBehavior": "transparent",
++             "required": {"always": True}, "costImpact": False, "parent": True},
++            _num("seed", "Seed", lo=0, hi=2147483647),
++            _num("faceLimit", "Face Limit", default=20000, lo=1000, hi=200000),
++            _num("octreeResolution", "Octree", default=256, lo=128, hi=512),
++        ],
++        "hunyuan3d",
++    ),
++]
++
++BY_ID = {m["id"]: m for m in MODELS}
++
++
++def public(record):
++    return {k: v for k, v in record.items() if not k.startswith("_")}
++
++
++def get(identifier):
++    record = BY_ID.get(identifier)
++    return public(record) if record is not None else None
++
++
++def provider_of(identifier):
++    record = BY_ID.get(identifier)
++    return record["_provider"] if record is not None else None
+diff -ruN -x __pycache__ p0/scenario/core/api/local_backend/downloader.py work/scenario/core/api/local_backend/downloader.py
+--- p0/scenario/core/api/local_backend/downloader.py	1970-01-01 08:00:00.000000000 +0800
++++ work/scenario/core/api/local_backend/downloader.py	2026-10-24 11:47:45.536714936 +0800
+@@ -0,0 +1,71 @@
++# SPDX-FileCopyrightText: 2026 GenAIWorkPipeline local modifications
++# SPDX-License-Identifier: GPL-3.0-or-later
++"""Result "downloads" from the local store: same receipts and checks, a file copy instead of HTTPS."""
++
++import hashlib
++import os
++from pathlib import Path
++from urllib.parse import urlsplit
++
++from ...jobs.transfers import (
++    DownloadedResult,
++    ResultDownloader,
++    StoragePolicy,
++    TransferError,
++    _root,
++    validate_result_name,
++)
++from . import LOCAL_STORE_HOST
++
++
++class LocalResultDownloader(ResultDownloader):
++    def __init__(self, state, *, max_bytes=512 * 1024 * 1024):
++        super().__init__(
++            StoragePolicy(frozenset({LOCAL_STORE_HOST}), max_bytes=max_bytes), online_access=lambda: True
++        )
++        self._state = state
++
++    def _source(self, url):
++        self._policy.destination(url)  # same host check as the HTTPS path
++        parts = urlsplit(url).path.strip("/").split("/")
++        if len(parts) != 3 or parts[0] != "blobs":
++            raise TransferError("Local result URL is not a stored blob")
++        try:
++            return self._state.blob_path(parts[1], parts[2])
++        except KeyError:
++            raise TransferError("Local result URL is not a stored blob") from None
++
++    def download(self, url, *, root, name, expected_size=None, expected_sha256=None, max_bytes=None,
++                 allow_size_mismatch=False, cancel=None, partial=None):
++        source = self._source(url)
++        limit = min(self._policy.max_bytes, max_bytes or self._policy.max_bytes)
++        destination = _root(root) / validate_result_name(name)
++        if destination.exists() or destination.is_symlink():
++            raise TransferError("Result filename already exists")
++        try:
++            size = source.stat().st_size
++        except OSError:
++            raise TransferError("Local result file is missing") from None
++        if size > limit:
++            raise TransferError("Storage response exceeds the byte limit")
++        if expected_size is not None and size != expected_size and not allow_size_mismatch:
++            raise TransferError("Storage response size differs from the declared result size")
++        digest = hashlib.sha256()
++        temporary = Path(str(destination) + ".partial")
++        with open(source, "rb") as reader, open(temporary, "xb") as writer:
++            while chunk := reader.read(1 << 20):
++                if cancel is not None and cancel.is_set():
++                    writer.close()
++                    temporary.unlink(missing_ok=True)
++                    raise TransferError("Storage transfer interrupted")
++                digest.update(chunk)
++                writer.write(chunk)
++            writer.flush()
++            os.fsync(writer.fileno())
++        sha = digest.hexdigest()
++        if expected_sha256 is not None and sha != expected_sha256.lower():
++            temporary.unlink(missing_ok=True)
++            raise TransferError("Storage response digest differs")
++        os.link(temporary, destination)
++        temporary.unlink()
++        return DownloadedResult(destination.name, size, sha)
+diff -ruN -x __pycache__ p0/scenario/core/api/local_backend/providers.py work/scenario/core/api/local_backend/providers.py
+--- p0/scenario/core/api/local_backend/providers.py	1970-01-01 08:00:00.000000000 +0800
++++ work/scenario/core/api/local_backend/providers.py	2026-10-24 11:46:38.524710952 +0800
+@@ -0,0 +1,109 @@
++# SPDX-FileCopyrightText: 2026 GenAIWorkPipeline local modifications
++# SPDX-License-Identifier: GPL-3.0-or-later
++"""Local compute: each provider turns one job input into output files via a 127.0.0.1 service.
++
++Services belong to GenAIWorkPipeline (its console starts and unloads them). A provider never
++starts a service itself; if one is down the job fails with a message naming it.
++Endpoints can be overridden per service with GENAI_<NAME>_URL (tests use fakes instead).
++"""
++
++import json
++import os
++import urllib.error
++import urllib.request
++
++SERVICES = {
++    "image": ("GENAI_IMAGE_URL", "http://127.0.0.1:8090"),
++    "shape3d": ("GENAI_SHAPE3D_URL", "http://127.0.0.1:8098"),
++    "llm": ("GENAI_LLM_URL", "http://127.0.0.1:8081"),
++}
++LOOPBACK = ("http://127.0.0.1:", "http://localhost:")
++
++
++class ProviderError(RuntimeError):
++    """Job failure with a message safe to show (no paths outside the job)."""
++
++
++def service_url(name):
++    env, default = SERVICES[name]
++    url = os.environ.get(env) or default
++    if not url.startswith(LOOPBACK):
++        raise ProviderError(f"{name} service must be on this machine (127.0.0.1)")
++    return url.rstrip("/")
++
++
++def _post(name, path, body, timeout):
++    url = service_url(name) + path
++    request = urllib.request.Request(
++        url, data=json.dumps(body).encode(), method="POST",
++        headers={"Content-Type": "application/json"},
++    )
++    try:
++        # Loopback only; never through a proxy.
++        opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
++        with opener.open(request, timeout=timeout) as response:
++            return json.loads(response.read() or b"{}")
++    except urllib.error.HTTPError as error:
++        try:
++            detail = json.loads(error.read() or b"{}").get("error", "")
++        except ValueError:
++            detail = ""
++        raise ProviderError(f"{name} service error {error.code}: {detail}"[:300]) from None
++    except (urllib.error.URLError, OSError):
++        raise ProviderError(
++            f"Local {name} service is not running on {service_url(name)}; start it from the pipeline console"
++        ) from None
++
++
++def _image_size(path):
++    """(width, height) of a PNG/JPEG without third-party imports; None when unknown."""
++    try:
++        with open(path, "rb") as handle:
++            head = handle.read(32)
++            if head[:8] == b"\x89PNG\r\n\x1a\n":
++                return int.from_bytes(head[16:20], "big"), int.from_bytes(head[20:24], "big")
++            if head[:2] == b"\xff\xd8":
++                handle.seek(2)
++                while True:
++                    marker = handle.read(2)
++                    if len(marker) < 2 or marker[0] != 0xFF:
++                        return None
++                    length = int.from_bytes(handle.read(2), "big")
++                    if marker[1] in (0xC0, 0xC1, 0xC2):
++                        data = handle.read(5)
++                        return int.from_bytes(data[3:5], "big"), int.from_bytes(data[1:3], "big")
++                    handle.seek(length - 2, 1)
++    except OSError:
++        return None
++    return None
++
++
++def flux(job_input, work, resolve_input):
++    out = os.path.join(work, "image.png")
++    body = {"prompt": job_input["prompt"], "out": out, "backend": "flux"}
++    for src, dst in (("width", "width"), ("height", "height"), ("numInferenceSteps", "steps"), ("seed", "seed")):
++        if job_input.get(src) is not None:
++            body[dst] = int(job_input[src])
++    _post("image", "/generate", body, timeout=900)
++    if not os.path.isfile(out):
++        raise ProviderError("image service reported success but wrote no file")
++    size = _image_size(out) or (None, None)
++    return [{"file": out, "name": "image.png", "mimeType": "image/png",
++             "type": "inference-txt2img", "width": size[0], "height": size[1]}]
++
++
++def hunyuan3d(job_input, work, resolve_input):
++    image = resolve_input(job_input["image"])
++    out = os.path.join(work, "model.glb")
++    body = {"image": image, "out": out}
++    for src, dst in (("seed", "seed"), ("faceLimit", "max_faces"), ("octreeResolution", "octree")):
++        if job_input.get(src) is not None:
++            body[dst] = int(job_input[src])
++    result = _post("shape3d", "/generate", body, timeout=1800)
++    if not os.path.isfile(out):
++        raise ProviderError("shape3d service reported success but wrote no file")
++    return [{"file": out, "name": "model.glb", "mimeType": "model/gltf-binary",
++             "type": "img23d", "faces": result.get("faces"), "vertices": result.get("vertices")}]
++
++
++PROVIDERS = {"flux": flux, "hunyuan3d": hunyuan3d}
+diff -ruN -x __pycache__ p0/scenario/core/api/local_backend/state.py work/scenario/core/api/local_backend/state.py
+--- p0/scenario/core/api/local_backend/state.py	1970-01-01 08:00:00.000000000 +0800
++++ work/scenario/core/api/local_backend/state.py	2026-10-24 11:45:54.904708359 +0800
+@@ -0,0 +1,106 @@
++# SPDX-FileCopyrightText: 2026 GenAIWorkPipeline local modifications
++# SPDX-License-Identifier: GPL-3.0-or-later
++"""Durable local records (jobs, assets, uploads) and blob files under one private root.
++
++Each record is one JSON file written atomically; blobs live at blobs/<asset_id>/<name>.
++A process-wide lock serialises writes; readers always see a complete file.
++"""
++
++import datetime
++import hashlib
++import json
++import os
++import secrets
++import shutil
++import string
++import threading
++from pathlib import Path
++
++_ALPHABET = string.ascii_letters + string.digits
++_LOCK = threading.RLock()
++
++
++def new_id(prefix):
++    return prefix + "_" + "".join(secrets.choice(_ALPHABET) for _ in range(24))
++
++
++def now():
++    return datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3] + "Z"
++
++
++def default_root():
++    """GENAI_SCENE_STATE overrides; otherwise ~/.genai_scene_stage (private, 0700)."""
++    root = os.environ.get("GENAI_SCENE_STATE") or os.path.join(
++        os.path.expanduser("~"), ".genai_scene_stage"
++    )
++    return Path(root)
++
++
++class LocalState:
++    KINDS = ("jobs", "assets", "uploads")
++
++    def __init__(self, root=None):
++        self.root = Path(root) if root is not None else default_root()
++        for sub in (*self.KINDS, "blobs", "work"):
++            (self.root / sub).mkdir(mode=0o700, parents=True, exist_ok=True)
++
++    # ── records ──
++    def _path(self, kind, identifier):
++        if kind not in self.KINDS or not identifier or "/" in identifier or ".." in identifier:
++            raise KeyError(identifier)
++        return self.root / kind / f"{identifier}.json"
++
++    def get(self, kind, identifier):
++        try:
++            return json.loads(self._path(kind, identifier).read_text("utf-8"))
++        except (OSError, ValueError, KeyError):
++            return None
++
++    def put(self, kind, record):
++        path = self._path(kind, record["id"])
++        data = json.dumps(record, ensure_ascii=False, indent=1).encode("utf-8")
++        with _LOCK:
++            tmp = path.with_suffix(".tmp")
++            tmp.write_bytes(data)
++            os.replace(tmp, path)
++        return record
++
++    def update(self, kind, identifier, fn):
++        with _LOCK:
++            record = self.get(kind, identifier)
++            if record is None:
++                raise KeyError(identifier)
++            fn(record)
++            record["updatedAt"] = now()
++            return self.put(kind, record)
++
++    def all(self, kind):
++        out = []
++        for path in sorted((self.root / kind).glob("*.json")):
++            try:
++                out.append(json.loads(path.read_text("utf-8")))
++            except (OSError, ValueError):
++                continue
++        return out
++
++    # ── blobs ──
++    def blob_path(self, asset_id, name):
++        if "/" in name or name.startswith(".") or "/" in asset_id or ".." in asset_id:
++            raise KeyError(name)
++        return self.root / "blobs" / asset_id / name
++
++    def add_blob(self, asset_id, source, name):
++        """Copy a provider output into the store; returns (path, size, sha256)."""
++        target = self.blob_path(asset_id, name)
++        target.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
++        shutil.copyfile(source, target)
++        digest = hashlib.sha256()
++        with open(target, "rb") as handle:
++            while chunk := handle.read(1 << 20):
++                digest.update(chunk)
++        return target, target.stat().st_size, digest.hexdigest()
++
++    def work_dir(self, job_id):
++        path = self.root / "work" / job_id
++        path.mkdir(mode=0o700, parents=True, exist_ok=True)
++        return path
+diff -ruN -x __pycache__ p0/scenario/core/api/local_backend/transport.py work/scenario/core/api/local_backend/transport.py
+--- p0/scenario/core/api/local_backend/transport.py	1970-01-01 08:00:00.000000000 +0800
++++ work/scenario/core/api/local_backend/transport.py	2026-10-24 11:47:32.196714143 +0800
+@@ -0,0 +1,313 @@
++# SPDX-FileCopyrightText: 2026 GenAIWorkPipeline local modifications
++# SPDX-License-Identifier: GPL-3.0-or-later
++"""In-process httpx transport that answers the Scenario REST surface the extension uses.
++
++Routes (all under /v1, projectId ignored):
++  GET  /teams /projects                     one local team / project
++  GET  /models  /models/{id}  POST /models/get-bulk
++  POST /generate/custom/{id}[?dryRun]       free quote / local job
++  GET  /jobs  /jobs/{id}   POST /jobs/{id}/action (cancel)
++  GET  /assets  /assets/{id}  POST /assets/get-bulk
++Anything else answers 404 with a message naming the local fork, so a missing route is
++visible instead of silently succeeding.
++"""
++
++import base64
++import json
++import mimetypes
++import threading
++import traceback
++from urllib.parse import parse_qs
++
++import httpx
++
++from . import LOCAL_STORE_HOST, catalog, providers
++from .state import LocalState, new_id, now
++
++TEAM = {"id": "team_localpipeline00000000", "name": "Local pipeline"}
++PROJECT = {"id": catalog.OWNER, "name": "Local pipeline", "teamId": TEAM["id"]}
++ACTIVE = ("pending", "queued", "in-progress")
++
++
++def _json(status, body):
++    return httpx.Response(status, json=body, headers={"Content-Type": "application/json"})
++
++
++def _not_found(what):
++    return _json(404, {"message": f"{what} is not available in the local backend", "statusCode": 404})
++
++
++def _token(offset):
++    return base64.b64encode(json.dumps({"offset": offset}).encode()).decode()
++
++
++def _offset(token):
++    if not token:
++        return 0
++    try:
++        return int(json.loads(base64.b64decode(token))["offset"])
++    except (ValueError, KeyError, TypeError):
++        return 0
++
++
++def _page(rows, query, wrapper, default_size=50):
++    size = int(query.get("pageSize", [default_size])[0] or default_size)
++    start = _offset(query.get("paginationToken", [None])[0])
++    chunk = rows[start:start + size]
++    body = {wrapper: chunk}
++    if start + size < len(rows):
++        body["nextPaginationToken"] = _token(start + size)
++    return body
++
++
++class LocalTransport(httpx.BaseTransport):
++    """One per process is enough; jobs run on daemon threads, one at a time per service."""
++
++    def __init__(self, state=None, provider_table=None):
++        self.state = state if state is not None else LocalState()
++        self.providers = provider_table if provider_table is not None else providers.PROVIDERS
++        self._gpu = threading.Lock()  # local services share one machine: run jobs serially
++        self._threads = {}
++
++    # ── httpx entry ──
++    def handle_request(self, request):
++        path = request.url.path
++        if not path.startswith("/v1/"):
++            return _not_found(path)
++        parts = path[4:].strip("/").split("/")
++        query = parse_qs(request.url.query.decode() if isinstance(request.url.query, bytes) else request.url.query)
++        body = {}
++        if request.method in ("POST", "PUT", "PATCH"):
++            raw = request.read()
++            if raw:
++                try:
++                    body = json.loads(raw)
++                except ValueError:
++                    return _json(400, {"message": "Body must be JSON"})
++        try:
++            return self._route(request.method, parts, query, body)
++        except Exception as error:  # a backend bug must surface as a 500, never hang the SDK
++            traceback.print_exc()
++            return _json(500, {"message": f"local backend error: {type(error).__name__}"})
++
++    def _route(self, method, parts, query, body):
++        head = parts[0]
++        if head == "teams" and method == "GET" and len(parts) == 1:
++            return _json(200, {"teams": [TEAM]})
++        if head == "projects" and method == "GET" and len(parts) == 1:
++            return _json(200, {"projects": [PROJECT]})
++        if head == "models":
++            return self._models(method, parts, query, body)
++        if head == "generate" and len(parts) == 3 and parts[1] == "custom" and method == "POST":
++            return self._generate(parts[2], query, body)
++        if head == "jobs":
++            return self._jobs(method, parts, query, body)
++        if head == "assets":
++            return self._assets(method, parts, query, body)
++        return _not_found("/" + "/".join(parts))
++
++    # ── models ──
++    def _models(self, method, parts, query, body):
++        if method == "GET" and len(parts) == 1:
++            rows = [catalog.public(m) for m in catalog.MODELS]
++            caps = query.get("capabilities")
++            if caps:
++                wanted = set(",".join(caps).split(","))
++                rows = [r for r in rows if wanted & set(r["capabilities"])]
++            return _json(200, _page(rows, query, "models"))
++        if method == "POST" and parts[1:] == ["get-bulk"]:
++            ids = body.get("modelIds") or []
++            return _json(200, {"models": [catalog.get(i) for i in ids if catalog.get(i)]})
++        if method == "GET" and len(parts) == 2:
++            record = catalog.get(parts[1])
++            return _json(200, {"model": record}) if record else _not_found(f"model {parts[1]}")
++        return _not_found("/models/" + "/".join(parts[1:]))
++
++    # ── generation ──
++    def _generate(self, model_id, query, body):
++        record = catalog.get(model_id)
++        if record is None:
++            return _not_found(f"model {model_id}")
++        if query.get("dryRun"):
++            # Local compute has no price; the extension still requires an exact quote.
++            return _json(200, {"creativeUnitsCost": 0, "creativeUnitsDiscount": 0, "costDetails": {}})
++        missing = [i["name"] for i in record["inputs"] if (i.get("required") or {}).get("always") and body.get(i["name"]) in (None, "")]
++        if missing:
++            return _json(400, {"message": f"Missing required input: {', '.join(missing)}"})
++        job_id = new_id("job")
++        stamp = now()
++        job = {
++            "id": job_id,
++            "jobId": job_id,
++            "jobType": "custom",
++            "billing": {"cuCost": 0, "cuDiscount": 0},
++            "metadata": {"input": {"modelId": model_id, **body}, "assetIds": []},
++            "ownerId": catalog.OWNER,
++            "authorId": catalog.AUTHOR,
++            "createdAt": stamp,
++            "updatedAt": stamp,
++            "status": "queued",
++            "statusHistory": [{"status": "pending", "date": stamp}, {"status": "queued", "date": stamp}],
++            "progress": 0,
++        }
++        self.state.put("jobs", job)
++        thread = threading.Thread(target=self._run, args=(job_id,), name=f"local-job-{job_id}", daemon=True)
++        self._threads[job_id] = thread
++        thread.start()
++        return _json(200, {"job": self._public_job(job)})
++
++    def _set_status(self, job_id, status, **fields):
++        def change(job):
++            job["status"] = status
++            job["statusHistory"].append({"status": status, "date": now()})
++            job.update(fields)
++        return self.state.update("jobs", job_id, change)
++
++    def _run(self, job_id):
++        job = self.state.get("jobs", job_id)
++        with self._gpu:
++            job = self.state.get("jobs", job_id)
++            if job is None or job["status"] == "canceled":
++                return
++            self._set_status(job_id, "in-progress", progress=0.05)
++            job_input = dict(job["metadata"]["input"])
++            model_id = job_input.pop("modelId")
++            work = str(self.state.work_dir(job_id))
++            try:
++                provider = self.providers[catalog.provider_of(model_id)]
++                outputs = provider(job_input, work, self._resolve_input)
++            except providers.ProviderError as error:
++                self._fail(job_id, str(error))
++                return
++            except Exception as error:  # provider bug: fail the job, keep the backend alive
++                traceback.print_exc()
++                self._fail(job_id, f"local provider error: {type(error).__name__}")
++                return
++            if self.state.get("jobs", job_id)["status"] == "canceled":
++                return
++            asset_ids = []
++            for out in outputs:
++                asset_ids.append(self._store_asset(out, job_id, model_id)["id"])
++
++            def done(record):
++                record["metadata"]["assetIds"] = asset_ids
++                record["progress"] = 1
++            self.state.update("jobs", job_id, done)
++            self._set_status(job_id, "success", progress=1)
++
++    def _fail(self, job_id, message):
++        def note(job):
++            job["metadata"]["error"] = message
++        self.state.update("jobs", job_id, note)
++        self._set_status(job_id, "failure", progress=0)
++
++    def _store_asset(self, out, job_id, model_id, *, kind="inference"):
++        asset_id = new_id("asset")
++        _, size, sha = self.state.add_blob(asset_id, out["file"], out["name"])
++        meta = {"type": out["type"], "kind": kind, "modelId": model_id, "jobId": job_id, "name": out["name"]}
++        for key in ("width", "height", "faces", "vertices"):
++            if out.get(key) is not None:
++                meta[key] = out[key]
++        if out.get("parentId"):
++            meta["parentId"] = out["parentId"]
++        stamp = now()
++        asset = {
++            "id": asset_id,
++            "ownerId": catalog.OWNER,
++            "authorId": catalog.AUTHOR,
++            "createdAt": stamp,
++            "updatedAt": stamp,
++            "status": "success",
++            "mimeType": out["mimeType"],
++            "url": f"https://{LOCAL_STORE_HOST}/blobs/{asset_id}/{out['name']}",
++            "properties": {"size": size, **({"width": out["width"], "height": out["height"]} if out.get("width") else {})},
++            "metadata": meta,
++            "tags": [],
++            "collectionIds": [],
++            "privacy": "private",
++            "source": "inference" if kind == "inference" else "uploaded",
++            "_sha256": sha,
++        }
++        self.state.put("assets", asset)
++        return asset
++
++    def import_file(self, path, *, asset_type="uploaded", mime=None):
++        """Register a local file as an input asset (pipeline references); returns the asset id."""
++        import os
++        name = os.path.basename(path)
++        mime = mime or mimetypes.guess_type(name)[0] or "application/octet-stream"
++        size = providers._image_size(path) if mime.startswith("image/") else None
++        out = {"file": path, "name": name, "mimeType": mime, "type": asset_type,
++               "width": size[0] if size else None, "height": size[1] if size else None}
++        return self._store_asset(out, None, None, kind="uploaded")["id"]
++
++    def _resolve_input(self, value):
++        """An input naming an asset id becomes that asset's local file path."""
++        if isinstance(value, str) and value.startswith("asset_"):
++            asset = self.state.get("assets", value)
++            if asset is None:
++                raise providers.ProviderError(f"Input asset {value} does not exist locally")
++            return str(self.state.blob_path(value, asset["metadata"]["name"]))
++        raise providers.ProviderError("Image inputs must be asset ids")
++
++    # ── jobs ──
++    @staticmethod
++    def _public_job(job):
++        return {k: v for k, v in job.items() if k != "id"}
++
++    def _jobs(self, method, parts, query, body):
++        if method == "GET" and len(parts) == 1:
++            rows = sorted(self.state.all("jobs"), key=lambda j: j["createdAt"], reverse=True)
++            status = query.get("status")
++            if status:
++                rows = [j for j in rows if j["status"] in status]
++            return _json(200, _page([self._public_job(j) for j in rows], query, "jobs"))
++        if len(parts) >= 2:
++            job = self.state.get("jobs", parts[1])
++            if job is None:
++                return _not_found(f"job {parts[1]}")
++            if method == "GET" and len(parts) == 2:
++                return _json(200, {"job": self._public_job(job)})
++            if method == "POST" and parts[2:] == ["action"]:
++                if body.get("action") != "cancel":
++                    return _json(400, {"message": "Only cancel is supported locally"})
++                if job["status"] in ACTIVE:
++                    job = self._set_status(job["id"], "canceled")
++                return _json(200, {"job": self._public_job(job)})
++        return _not_found("/jobs/" + "/".join(parts[1:]))
++
++    # ── assets ──
++    @staticmethod
++    def _public_asset(asset):
++        return {k: v for k, v in asset.items() if not k.startswith("_")}
++
++    def _assets(self, method, parts, query, body):
++        if method == "GET" and len(parts) == 1:
++            rows = sorted(self.state.all("assets"), key=lambda a: a["createdAt"], reverse=True)
++            return _json(200, _page([self._public_asset(a) for a in rows], query, "assets"))
++        if method == "POST" and parts[1:] == ["get-bulk"]:
++            ids = body.get("assetIds") or []
++            found = [self.state.get("assets", i) for i in ids]
++            return _json(200, {"assets": [self._public_asset(a) for a in found if a]})
++        if method == "GET" and len(parts) == 2:
++            asset = self.state.get("assets", parts[1])
++            return _json(200, {"asset": self._public_asset(asset)}) if asset else _not_found(f"asset {parts[1]}")
++        return _not_found("/assets/" + "/".join(parts[1:]))
++
++    def join(self, timeout=None):
++        """Tests: wait for background jobs."""
++        for thread in list(self._threads.values()):
++            thread.join(timeout)
++
++
++_SHARED = None
++_SHARED_LOCK = threading.Lock()
++
++
++def shared_transport():
++    """The process-wide backend (one job queue for this machine)."""
++    global _SHARED
++    with _SHARED_LOCK:
++        if _SHARED is None:
++            _SHARED = LocalTransport()
++        return _SHARED
+diff -ruN -x __pycache__ p0/scenario/core/api/sdk_adapter.py work/scenario/core/api/sdk_adapter.py
+--- p0/scenario/core/api/sdk_adapter.py	2026-10-24 11:49:07.528400256 +0800
++++ work/scenario/core/api/sdk_adapter.py	2026-10-24 11:47:58.821147794 +0800
+@@ -28,7 +28,9 @@
+ from .sdk_extensions import SDKResourceExtensions
+ from .user_agent import user_agent_string
+ 
+-API_URL = "https://cloud-removed.invalid/v1"  # 云端已移除（.invalid 永不解析）；作业库仍要合法 HTTPS 地址作键；阶段 1 换成 LocalAdapter
++from .local_backend import LOCAL_API_URL
++
++API_URL = LOCAL_API_URL  # 本地 fork：请求由进程内 LocalTransport 应答，不出本机
+ # The API reference states no get-bulk batch limit; stay small until a capture
+ # establishes one, and bound each call so a refresh cannot fan out reads.
+ MODEL_BULK_CHUNK = 50
+@@ -636,8 +638,13 @@
+ 
+ 
+ def _client(credentials, base_url, timeout, transport):
+-    raise RuntimeError("Scenario cloud backend removed in local fork; use the local pipeline adapter")
+     import httpx
++
++    if transport is None:
++        # 本地 fork：没有注入传输层时一律走进程内本地后端，绝不连接真实网络。
++        from .local_backend.transport import shared_transport
++
++        transport = shared_transport()
+     from scenario_sdk import Scenario
+ 
+     authorization = credentials.authorization()
+--- p0/scenario/blender/runtime.py	2026-10-24 11:49:06.266882709 +0800
++++ work/scenario/blender/runtime.py	2026-10-24 11:48:50.358104339 +0800
+@@ -184,7 +184,8 @@
+ 
+ 
+ def online():
+-    return bool(getattr(bpy.app, "online_access", True))
++    # 本地 fork：所有「联网」请求都由本进程内的本地后端应答，不受 Blender 离线模式限制。
++    return True
+ 
+ 
+ def waveform_spec():
+@@ -242,12 +243,10 @@
+ 
+ 
+ def credentials():
+-    p = prefs()
+-    return config.resolve_credentials(
+-        p.api_key if p else "",
+-        p.api_secret if p else "",
+-        source=p.credential_source if p else "PREFERENCES",
+-    )
++    # 本地 fork：后端在本进程内，没有账号；固定的本地标识只用来隔离本机作业库。
++    from ..core.api.local_backend import LOCAL_KEY, LOCAL_SECRET
++
++    return config.Credentials(LOCAL_KEY, LOCAL_SECRET)
+ 
+ 
+ def project_id():
+@@ -359,7 +358,10 @@
+         try:
+             # Exact hosts documented by Scenario's CDN and asset-retrieval guides.
+             # Never derive this allowlist from a service response or signed URL.
+-            policy = StoragePolicy(frozenset({"cdn.cloud.scenario.com", "cdn.scenario.com"}))
++            from ..core.api.local_backend.downloader import LocalResultDownloader
++            from ..core.api.local_backend.transport import shared_transport
++
++            local_downloader = LocalResultDownloader(shared_transport().state)
+             root = paths().state_dir / "shared-results"
+             root.mkdir(mode=0o700, parents=True, exist_ok=True)
+             upload_root = paths().state_dir / "shared-uploads"
+@@ -376,7 +378,7 @@
+             session = JobSession(
+                 adapter,
+                 state.job_store,
+-                result_downloader=ResultDownloader(policy, online_access=catalog.network_allowed),
++                result_downloader=local_downloader,
+                 result_root=root,
+                 upload_store=UploadStore(upload_root / "uploads.sqlite3", state.job_store.scope),
+                 upload_sources=UploadSources(source_root),
+diff -ruN -x __pycache__ p0/tests/local/conftest.py work/tests/local/conftest.py
+--- p0/tests/local/conftest.py	1970-01-01 08:00:00.000000000 +0800
++++ work/tests/local/conftest.py	2026-10-24 11:48:21.011640986 +0800
+@@ -0,0 +1,71 @@
++# SPDX-FileCopyrightText: 2026 Scenario Inc.
++# SPDX-License-Identifier: GPL-3.0-or-later
++"""Make the repo root importable so `import scenario.core...` works without Blender."""
++
++import pathlib
++import socket
++import sys
++
++import pytest
++
++ROOT = pathlib.Path(__file__).resolve().parents[2]
++if str(ROOT) not in sys.path:
++    sys.path.insert(0, str(ROOT))
++
++FIXTURES = ROOT / "tests" / "fixtures"
++
++_LOOPBACK = {"127.0.0.1", "::1", "localhost"}
++_REAL_CONNECT = socket.socket.connect
++_REAL_CONNECT_EX = socket.socket.connect_ex
++
++
++def _guarded_connect(real):
++    def connect(self, address, *args, **kwargs):
++        if self.family == getattr(socket, "AF_UNIX", None):
++            return real(self, address, *args, **kwargs)
++        host = str(address[0]) if isinstance(address, tuple) and address else str(address)
++        if host not in _LOOPBACK:
++            raise RuntimeError(
++                f"network access is not allowed in unit tests (tried {address!r}); "
++                "use @pytest.mark.allow_network only for an explicit network test"
++            )
++        return real(self, address, *args, **kwargs)
++
++    return connect
++
++
++@pytest.fixture(autouse=True)
++def _no_network(request, monkeypatch):
++    """Catch accidental service connections while keeping local MCP tests usable."""
++    if request.node.get_closest_marker("allow_network"):
++        return
++    monkeypatch.setattr(socket.socket, "connect", _guarded_connect(_REAL_CONNECT))
++    monkeypatch.setattr(socket.socket, "connect_ex", _guarded_connect(_REAL_CONNECT_EX))
++
++
++@pytest.fixture(autouse=True)
++def _instant_sdk_retries(monkeypatch):
++    """Skip the SDK's retry waits; the attempts and their order are unchanged.
++
++    SDKAdapter retries allow-listed reads with the SDK's own backoff, which
++    would otherwise sleep for real in every test that fails such a read.
++    Tests that check the waits record them with their own fixture.
++    """
++    import time
++
++    try:
++        import scenario_sdk._base_client as base
++    except ImportError:
++        return
++    monkeypatch.setattr(base, "time", _SleeplessTime(time))
++
++
++class _SleeplessTime:
++    def __init__(self, module):
++        self._module = module
++
++    def sleep(self, seconds):
++        pass
++
++    def __getattr__(self, name):
++        return getattr(self._module, name)
+diff -ruN -x __pycache__ p0/tests/local/test_local_backend.py work/tests/local/test_local_backend.py
+--- p0/tests/local/test_local_backend.py	1970-01-01 08:00:00.000000000 +0800
++++ work/tests/local/test_local_backend.py	2026-10-24 11:48:30.179735902 +0800
+@@ -0,0 +1,124 @@
++# SPDX-FileCopyrightText: 2026 GenAIWorkPipeline local modifications
++# SPDX-License-Identifier: GPL-3.0-or-later
++"""The unchanged quote → submit → follow → download path, answered by the local backend.
++
++Providers are fakes that write small files, so this runs anywhere without GPU services.
++"""
++
++import json
++import struct
++import zlib
++from argparse import Namespace
++from decimal import Decimal
++from types import SimpleNamespace
++
++import pytest
++
++from scenario.core.api.local_backend import LOCAL_KEY, LOCAL_SECRET
++from scenario.core.api.local_backend.downloader import LocalResultDownloader
++from scenario.core.api.local_backend.providers import ProviderError
++from scenario.core.api.local_backend.state import LocalState
++from scenario.core.api.local_backend.transport import LocalTransport
++from scenario.core.api.sdk_adapter import Credentials, SDKAdapter
++from tools import smoke_image
++
++
++def png(width=8, height=6):
++    raw = b"".join(b"\x00" + b"\x80\x40\x20" * width for _ in range(height))
++
++    def chunk(kind, data):
++        return struct.pack(">I", len(data)) + kind + data + struct.pack(">I", zlib.crc32(kind + data))
++
++    return (b"\x89PNG\r\n\x1a\n" + chunk(b"IHDR", struct.pack(">IIBBBBB", width, height, 8, 2, 0, 0, 0))
++            + chunk(b"IDAT", zlib.compress(raw)) + chunk(b"IEND", b""))
++
++
++def glb():
++    doc = json.dumps({"asset": {"version": "2.0"}, "scenes": [{"nodes": []}], "scene": 0}).encode()
++    doc += b" " * (-len(doc) % 4)
++    body = struct.pack("<I4s", len(doc), b"JSON") + doc
++    return struct.pack("<4sII", b"glTF", 2, 12 + len(body)) + body
++
++
++def fake_flux(job_input, work, resolve):
++    path = f"{work}/image.png"
++    with open(path, "wb") as handle:
++        handle.write(png(int(job_input.get("width", 8)) // 128 or 8, 6))
++    return [{"file": path, "name": "image.png", "mimeType": "image/png", "type": "inference-txt2img",
++             "width": 8, "height": 6}]
++
++
++def fake_hunyuan(job_input, work, resolve):
++    source = resolve(job_input["image"])
++    assert source.endswith(".png")
++    path = f"{work}/model.glb"
++    with open(path, "wb") as handle:
++        handle.write(glb())
++    return [{"file": path, "name": "model.glb", "mimeType": "model/gltf-binary", "type": "img23d"}]
++
++
++def broken(job_input, work, resolve):
++    raise ProviderError("Local image service is not running on http://127.0.0.1:8090")
++
++
++@pytest.fixture
++def backend(tmp_path):
++    transport = LocalTransport(LocalState(tmp_path / "state"),
++                               {"flux": fake_flux, "hunyuan3d": fake_hunyuan})
++    return transport
++
++
++def run(tmp_path, transport, model, parameters, kind):
++    settings = SimpleNamespace(credentials=SimpleNamespace(key=LOCAL_KEY, secret=LOCAL_SECRET), project_id=None)
++    params = tmp_path / f"{kind}.json"
++    params.write_text(json.dumps(parameters))
++    run_dir = tmp_path / f"run-{kind}"
++    downloader = LocalResultDownloader(transport.state)
++    quote = Namespace(command="quote", run_dir=run_dir, result_kind=kind, model=model, parameters=params,
++                      saved_runs=None, expected_result_kind=None)
++    assert smoke_image.execute(quote, settings, transport=transport, downloader=downloader) == 0
++    plan = json.loads((run_dir / "quote.json").read_text())
++    assert plan["cost"] == "0"
++    submit = Namespace(command="submit", run_dir=run_dir, approved_quote=smoke_image.digest((run_dir / "quote.json").read_bytes()),
++                       approved_cost=Decimal("0"), max_cu=Decimal("0"), timeout=30, expected_result_kind=None)
++    return smoke_image.execute(submit, settings, transport=transport, downloader=downloader), run_dir
++
++
++def test_catalog_and_quote_are_local(backend):
++    adapter = SDKAdapter(Credentials(LOCAL_KEY, LOCAL_SECRET), online=lambda: True, transport=backend)
++    try:
++        assert adapter.model("model_local-flux-schnell")["capabilities"] == ["txt2img"]
++        assert [t["id"] for t in adapter.teams()["teams"]] == ["team_localpipeline00000000"]
++    finally:
++        adapter.close()
++
++
++def test_image_job_round_trip(tmp_path, backend):
++    code, run_dir = run(tmp_path, backend, "model_local-flux-schnell", {"prompt": "a lighthouse", "width": 1024}, "image")
++    assert code == 0
++    files = list((run_dir / "results").rglob("*.png"))
++    assert len(files) == 1 and files[0].read_bytes().startswith(b"\x89PNG")
++
++
++def test_image_to_3d_uses_a_local_input_asset(tmp_path, backend):
++    ref = tmp_path / "ref.png"
++    ref.write_bytes(png())
++    asset_id = backend.import_file(str(ref))
++    code, run_dir = run(tmp_path, backend, "model_local-hunyuan3d-2mini", {"image": asset_id}, "model")
++    assert code == 0
++    assert list((run_dir / "results").rglob("*.glb"))
++
++
++def test_failed_provider_fails_the_job_with_its_message(tmp_path):
++    transport = LocalTransport(LocalState(tmp_path / "state"), {"flux": broken})
++    with pytest.raises(smoke_image.SmokeError):
++        run(tmp_path, transport, "model_local-flux-schnell", {"prompt": "x"}, "image")
++    job = transport.state.all("jobs")[0]
++    assert job["status"] == "failure" and "8090" in job["metadata"]["error"]
++
++
++def test_unknown_routes_say_local(backend):
++    import httpx
++    client = httpx.Client(transport=backend, base_url="https://local-api.genai.invalid")
++    response = client.get("/v1/workflows")
++    assert response.status_code == 404 and "local backend" in response.json()["message"]

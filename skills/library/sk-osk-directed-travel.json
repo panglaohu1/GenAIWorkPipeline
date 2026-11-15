@@ -1,0 +1,20 @@
+{
+  "id": "sk-osk-directed-travel",
+  "name": "有向通行：河道顺逆不同，转换点要合法",
+  "icon": "🧭",
+  "stages": [
+    "plan",
+    "assemble"
+  ],
+  "required_tools": [],
+  "instructions": "设计导航时用有向通行图：顺流快、逆流慢，陆路、沿岸、河上分开计费；只在港口、岸口、桥、渡口处允许换乘。河道贴近草地不等于能上岸，瀑布上下端靠近也不能直通。验收：同一对端点顺逆查询结果不同且合理；上下岸只走合法转换点；导航与可见地表是同一版本。",
+  "description": "作者 2024-05 的星球河网材料：沿河更快、顺流尤其快。",
+  "category": "style",
+  "origin": "Oskar 内置资料库（agents/knowledge/oskar/library）· 2026-10-11 提炼",
+  "evidence": [
+    "lib-0ebadbd13e8f 星球地形组织与河流导航",
+    "lib-f7f6d592b76e Add planet 研究"
+  ],
+  "lifecycle": "draft",
+  "author_agent": "oskar"
+}

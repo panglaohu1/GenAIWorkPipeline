@@ -1,0 +1,21 @@
+{
+  "id": "sk-osk-big-pattern",
+  "name": "先建立大尺度图案，再打破一点",
+  "icon": "🧩",
+  "stages": [
+    "plan",
+    "oskar",
+    "review"
+  ],
+  "required_tools": [],
+  "instructions": "先定秩序：主体—翼楼—塔—台基的主次，屋脊方向连贯，主题街区成片，柔和阴影把相隔的形体连成大图案；然后只在少数位置打破（一座斜塔、一段不对称台缘）。不要每个单元都做不同细节，单瓦片细节会让大面积重复。验收：缩小到缩略图仍能读出主次和图案；重复单元在远景不显眼。",
+  "description": "作者讲对称与混乱、建立模式再适量打破；Townscaper 用屋脊方向和主题街区形成大图案。",
+  "category": "style",
+  "origin": "Oskar 内置资料库（agents/knowledge/oskar/library）· 2026-10-11 提炼",
+  "evidence": [
+    "lib-362b24312fa4 Developing the Bad North Look 03:14–04:28",
+    "lib-b68d6719c85d The Story of Townscaper 03:24–04:12、13:37–17:44"
+  ],
+  "lifecycle": "draft",
+  "author_agent": "oskar"
+}

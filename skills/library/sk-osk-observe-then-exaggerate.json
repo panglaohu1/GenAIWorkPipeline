@@ -1,0 +1,21 @@
+{
+  "id": "sk-osk-observe-then-exaggerate",
+  "name": "比例为读图服务：观察真实，再为镜头夸张",
+  "icon": "👁",
+  "stages": [
+    "plan",
+    "oskar",
+    "review"
+  ],
+  "required_tools": [],
+  "instructions": "建筑和地形从真实观察出发（老城单栋近似直角、小偏转累积成大曲线），但比例按实际游戏镜头调整：窗、门、塔为远距离可读而适度放大；可操作的游戏区要清楚易读，不按绘本密度堆细节。验收：在游戏实际镜头距离下，门窗、通路、焦点能一眼读出；近看不显得空。",
+  "description": "Townscaper：比例为远距离读图而夸张；游戏需要可读，绘本式细节可留给近看。",
+  "category": "style",
+  "origin": "Oskar 内置资料库（agents/knowledge/oskar/library）· 2026-10-11 提炼",
+  "evidence": [
+    "lib-b68d6719c85d The Story of Townscaper 07:17–08:08、19:29–20:25、47:46–49:05",
+    "lib-82b0c3fb04b8 Organic Towns from Square Tiles"
+  ],
+  "lifecycle": "draft",
+  "author_agent": "oskar"
+}

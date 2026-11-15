@@ -1,0 +1,18 @@
+/* Clear cyan studio palette, revised from the user's preferred login reference.
+   UI colours are independent of the original artwork and render materials. */
+:root {
+  --bg:#F5FAFB; --panel:#FFFFFF; --panel-2:#EDF6F8;
+  --text:#193C46; --muted:#526F79; --line:#D5E6EA; --control-line:#789DA7;
+  --nav-bg:#E7F4F5; --nav-selected:#FFFFFF; --nav-text:#214B55;
+  --nav-muted:#4D7079; --nav-accent:#087A89; --nav-line:#C9E2E6;
+  --accent:#087A89; --accent-hover:#056271; --selected-bg:#DDF2F5;
+  --accent-2:#087F8C; --action:#087F8C; --action-hover:#066774; --on-action:#FFFFFF;
+  --hero-bg:#DFF3F4; --hero-muted:#486A73; --preview-bg:#EDF4F6; --preview-dark:#283D47;
+  --ok:#267452; --ok-bg:#E7F6EE; --warn:#875A17; --warn-bg:#FFF5DF;
+  --err:#B34249; --err-bg:#FFF0F1; --wait:#6E5BAD; --wait-bg:#F2EEFC;
+  --radius:12px; --mono:ui-monospace,"SF Mono",Menlo,monospace;
+  color-scheme:light;
+}
+:focus-visible {outline:2px solid var(--accent);outline-offset:3px}
+input,select,textarea {accent-color:var(--accent)}
+::selection {background:var(--selected-bg);color:var(--text)}

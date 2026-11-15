@@ -1,0 +1,30 @@
+/* Oskar 多场景世界：旅程条、维度条、趋近曲线 */
+.atlas-bible blockquote,.atlas-motto{margin:4px 0 12px;padding:10px 14px;border-left:2px solid var(--accent);background:var(--panel-2);font-size:13px;line-height:1.8;color:var(--text)}
+.atlas-journey{display:flex;align-items:flex-end;gap:6px;margin-top:14px;overflow-x:auto;padding-bottom:4px}
+.atlas-stop{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:3px;min-width:118px;padding:10px 12px;text-align:left;background:var(--panel);border:1px solid var(--line);border-radius:8px}
+.atlas-stop.climax{border-color:var(--accent);background:var(--selected-bg)}
+.atlas-stop small{font:9px var(--mono);color:var(--muted)}
+.atlas-stop b{font-size:12px;font-weight:500}
+.atlas-stop i{display:block;width:100%;height:28px;position:relative}
+.atlas-stop i:after{content:"";position:absolute;left:0;right:0;bottom:0;height:var(--h);background:linear-gradient(var(--accent),color-mix(in srgb,var(--accent) 35%,transparent));border-radius:3px 3px 0 0}
+.atlas-stop span{font-size:10px;color:var(--muted)}
+.atlas-arrow{color:var(--muted);align-self:center}
+.atlas-bars{display:grid;gap:4px;margin:8px 0}
+.atlas-bars>div{display:grid;grid-template-columns:84px 1fr 22px;align-items:center;gap:8px;font-size:10px;color:var(--muted)}
+.atlas-bars i{display:block;height:6px;background:var(--panel-2);border-radius:3px;overflow:hidden}
+.atlas-bars b{display:block;height:100%;border-radius:3px}
+.atlas-bars b.ok{background:var(--ok)}.atlas-bars b.mid{background:var(--accent)}.atlas-bars b.low{background:var(--warn)}
+.atlas-bars em{font:10px var(--mono);font-style:normal;color:var(--text);text-align:right}
+.atlas-curve{width:100%;max-width:340px;height:auto;display:block;margin-top:6px}
+.atlas-curve .pass{stroke:var(--ok);stroke-dasharray:3 3;stroke-width:1}
+.atlas-curve text{font:8px var(--mono);fill:var(--muted)}
+.atlas-curve .dir{fill:none;stroke:var(--accent);stroke-width:2}
+.atlas-curve .obj{fill:none;stroke:var(--muted);stroke-width:1.2;stroke-dasharray:4 3}
+.atlas-curve circle.acc{fill:var(--accent)}.atlas-curve circle.rej{fill:var(--panel);stroke:var(--warn);stroke-width:1.5}
+.atlas-legend{display:flex;gap:12px;font-size:9px;color:var(--muted);margin:2px 0 6px}
+.atlas-legend .dir:before{content:"━ ";color:var(--accent)}.atlas-legend .obj:before{content:"┅ ";color:var(--muted)}
+.atlas-verdict{font-size:11px;color:var(--text);margin:6px 0;line-height:1.7}
+.atlas-rubric{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;margin:10px 0}
+.atlas-rubric>div{border:1px solid var(--line);border-radius:8px;padding:10px 12px;background:var(--panel)}
+.atlas-rubric b{font-size:12px;font-weight:500}.atlas-rubric small{float:right;font:9px var(--mono);color:var(--muted)}
+.atlas-rubric p{font-size:10px;color:var(--muted);line-height:1.7;margin:6px 0 0}

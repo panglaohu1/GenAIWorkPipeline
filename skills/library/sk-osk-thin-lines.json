@@ -1,0 +1,22 @@
+{
+  "id": "sk-osk-thin-lines",
+  "name": "线条细而少，只描语义边",
+  "icon": "✏️",
+  "stages": [
+    "model",
+    "assemble",
+    "review"
+  ],
+  "required_tools": [],
+  "instructions": "轮廓线约一个屏幕像素粗、远处更细；只强调语义边：草/崖、屋顶/墙、岛缘对天空。不要把每条三角边描黑，不用粗黑描边掩盖裂缝或低质量网格。先看无描边、细描边两版同机位对比，再定强度。验收：近景无三角尖刺与闪烁；远景线条不糊成黑块；港口、路口等重点不被线条或阴影吞掉。",
+  "description": "作者说过度放大轮廓会露出三角瑕疵，缩到约像素尺度更好；Townscaper 用 128×128 纹理让细线保持一像素。",
+  "category": "style",
+  "origin": "Oskar 内置资料库（agents/knowledge/oskar/library）· 2026-10-11 提炼",
+  "evidence": [
+    "lib-362b24312fa4 Developing the Bad North Look 17:43–19:20",
+    "lib-b68d6719c85d The Story of Townscaper 33:18–36:53",
+    "lib-ac6c254e3f2e Landscapes 37:37–38:57"
+  ],
+  "lifecycle": "draft",
+  "author_agent": "oskar"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "sk-osk-river-wfc",
+  "name": "河流：先深度优先走远，流向 + 侵蚀约束",
+  "icon": "🏞",
+  "stages": [
+    "plan",
+    "oskar",
+    "model",
+    "review"
+  ],
+  "required_tools": [],
+  "instructions": "做河流时：①河单独先坍缩，用深度优先让它一路蜿蜒到远处；②其余地形再广度优先坍缩，得到平缓坡、偶尔撞陡崖；③每段河带流向（瓦片上的流向箭头），汇流和入湖/入海用专门瓦片；④全局加侵蚀约束：不允许局部最低点（水必须能流出去），这样河不会绕小圈。瀑布放在台地落差处逐级下落。验收：河道连续不成环、始终下坡、终点是湖或海；顺流方向一致；转弯处岸线圆滑。 引擎现状：瓦片 WFC 已有侵蚀约束（不留坑），河流瓦片与河道深度优先坍缩尚未实现——目前只能用 waterfall 原语表现落水，其余写进限制。",
+  "description": "作者 2024-03-18 Mega river system 及回复（flow direction + erosion constraint, disallowing local minima）。 关键词：河流、小河、溪流、瀑布、湖泊、水系、流向、下坡、峡谷",
+  "category": "style",
+  "origin": "Oskar 内置资料库（agents/knowledge/oskar/library）· 2026-10-22 精读 18 条帖子提炼",
+  "evidence": [
+    "lib-planet-threads-20261022 https://x.com/OskSta/status/1769691526924292506",
+    "lib-planet-threads-20261022 https://x.com/OskSta/status/1798310423554658732",
+    "lib-planet-threads-20261022 https://x.com/OskSta/status/1795831296952041691"
+  ],
+  "lifecycle": "draft",
+  "author_agent": "oskar"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "sk-osk-quiet-sea-busy-shore",
+  "name": "海面安静，信息在岸线",
+  "icon": "🌊",
+  "stages": [
+    "oskar",
+    "assemble",
+    "review"
+  ],
+  "required_tools": [],
+  "instructions": "大片水面保持平静低对比；岸线承担信息：岩脚一圈湿暗色、贴着岸线的 1–2 圈平行细波纹、少量泡沫，倒影可用简化色块。浪要依附真实岸线，不能凭空画。验收：远景能顺着白线读出岛形；水面没有大面积噪声；运行时波纹在动而不是只闪烁透明度。",
+  "description": "Bad North 的水面大部平静，循环波纹和接触边界强调海岸；Townscaper 倒影是简化色块。",
+  "category": "style",
+  "origin": "Oskar 内置资料库（agents/knowledge/oskar/library）· 2026-10-11 提炼",
+  "evidence": [
+    "lib-362b24312fa4 Developing the Bad North Look 31:26–32:07、40:40–41:40",
+    "lib-b68d6719c85d The Story of Townscaper 31:22–33:12",
+    "lib-3ff2dc1eeb74 五条 Oskar 动图"
+  ],
+  "lifecycle": "draft",
+  "author_agent": "oskar"
+}

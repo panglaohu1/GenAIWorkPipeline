@@ -1,0 +1,22 @@
+{
+ "scene": "高山圣城旧城·崖上宫城",
+ "palette": "citadel",
+ "seed": 5,
+ "grid": {"radius": 8, "cell": 2.0},
+ "level_h": 2.0,
+ "sea_level": 1,
+ "items": [
+  {"type": "stack", "at": [0.0, 0.1], "jitter": 0.12,
+   "tiers": [{"r": 0.7, "top": 3}, {"r": 0.55, "top": 5, "shift": [0.0, 0.04]}]},
+  {"type": "mass", "kind": "plinth", "at": [0.0, 0.2], "size": [0.84, 0.6], "bottom": 5, "top": 6, "roof": "flat"},
+  {"type": "building", "kind": "main", "at": [-0.02, 0.32], "size": [0.44, 0.26], "bottom": 6, "top": 10, "roof": "dome"},
+  {"type": "building", "kind": "wing", "at": [0.3, 0.2], "size": [0.2, 0.18], "bottom": 6, "top": 9, "roof": "flat"},
+  {"type": "building", "kind": "wing", "at": [-0.33, 0.2], "size": [0.2, 0.2], "bottom": 6, "top": 8, "roof": "flat"},
+  {"type": "building", "kind": "tower", "at": [-0.3, 0.42], "r": 0.065, "bottom": 6, "top": 12, "roof": "dome"},
+  {"type": "building", "kind": "tower", "at": [0.34, 0.4], "r": 0.06, "bottom": 6, "top": 11, "roof": "dome"},
+  {"type": "wall", "path": [[-0.46, -0.12], [0.46, -0.12], [0.46, 0.36]], "bottom": 5, "top": 7,
+   "gates": [{"at": [0.12, -0.12], "height": 2}]},
+  {"type": "path", "points": [[0.12, -0.34], [0.12, 0.04]], "levels": [3, 5], "clear": 2},
+  {"type": "waterfall", "at": [-0.24, -0.2], "dir": [0, -1], "width": 0.09}
+ ]
+}

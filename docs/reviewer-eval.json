@@ -1,0 +1,242 @@
+{
+ "main": {
+  "rows": [
+   {
+    "image": "tiger_messenger_scout_aircraft_r03_compare.jpg",
+    "ref": 3.0,
+    "scores": [
+     5.6,
+     5.6
+    ],
+    "mean": 5.6,
+    "n_diffs": [
+     5,
+     5
+    ],
+    "seconds": 83.4
+   },
+   {
+    "image": "tiger_messenger_scout_aircraft_r05_compare.jpg",
+    "ref": 4.0,
+    "scores": [
+     8.6,
+     8.6
+    ],
+    "mean": 8.6,
+    "n_diffs": [
+     2,
+     2
+    ],
+    "seconds": 61.7
+   },
+   {
+    "image": "tiger_messenger_scout_aircraft_r07_compare.jpg",
+    "ref": 4.5,
+    "scores": [
+     6.2,
+     6.2
+    ],
+    "mean": 6.2,
+    "n_diffs": [
+     5,
+     5
+    ],
+    "seconds": 128.5
+   },
+   {
+    "image": "tiger_messenger_scout_aircraft_r11_compare.jpg",
+    "ref": 6.5,
+    "scores": [
+     6.2,
+     6.2
+    ],
+    "mean": 6.2,
+    "n_diffs": [
+     5,
+     5
+    ],
+    "seconds": 161.0
+   },
+   {
+    "image": "coastal_cliff_palace_city_r01_compare.jpg",
+    "ref": 2.5,
+    "scores": [
+     0.0,
+     0.0
+    ],
+    "mean": 0.0,
+    "n_diffs": [
+     9,
+     9
+    ],
+    "seconds": 79.8
+   },
+   {
+    "image": "coastal_cliff_palace_city_r02_compare.jpg",
+    "ref": 3.0,
+    "scores": [
+     1.8,
+     1.8
+    ],
+    "mean": 1.8,
+    "n_diffs": [
+     8,
+     8
+    ],
+    "seconds": 113.1
+   },
+   {
+    "image": "coastal_cliff_palace_city_r09_compare.jpg",
+    "ref": 3.0,
+    "scores": [
+     0.0,
+     0.0
+    ],
+    "mean": 0.0,
+    "n_diffs": [
+     10,
+     10
+    ],
+    "seconds": 79.1
+   },
+   {
+    "image": "coastal_cliff_palace_city_r18_compare.jpg",
+    "ref": 3.5,
+    "scores": [
+     4.8,
+     4.8
+    ],
+    "mean": 4.8,
+    "n_diffs": [
+     7,
+     7
+    ],
+    "seconds": 81.8
+   }
+  ],
+  "mae_vs_ref": 2.15,
+  "spearman_vs_ref": 0.76,
+  "repeat_spread": 0.0,
+  "avg_seconds": 98.5
+ },
+ "vision": {
+  "rows": [
+   {
+    "image": "tiger_messenger_scout_aircraft_r03_compare.jpg",
+    "ref": 3.0,
+    "scores": [
+     8.0,
+     8.0
+    ],
+    "mean": 8.0,
+    "n_diffs": [
+     2,
+     2
+    ],
+    "seconds": 31.2
+   },
+   {
+    "image": "tiger_messenger_scout_aircraft_r05_compare.jpg",
+    "ref": 4.0,
+    "scores": [
+     7.2,
+     3.6
+    ],
+    "mean": 5.4,
+    "n_diffs": [
+     4,
+     5
+    ],
+    "seconds": 40.1
+   },
+   {
+    "image": "tiger_messenger_scout_aircraft_r07_compare.jpg",
+    "ref": 4.5,
+    "scores": [
+     5.6,
+     7.0
+    ],
+    "mean": 6.3,
+    "n_diffs": [
+     5,
+     3
+    ],
+    "seconds": 43.1
+   },
+   {
+    "image": "tiger_messenger_scout_aircraft_r11_compare.jpg",
+    "ref": 6.5,
+    "scores": [
+     8.8,
+     7.6
+    ],
+    "mean": 8.2,
+    "n_diffs": [
+     3,
+     3
+    ],
+    "seconds": 46.4
+   },
+   {
+    "image": "coastal_cliff_palace_city_r01_compare.jpg",
+    "ref": 2.5,
+    "scores": [
+     3.0,
+     4.6
+    ],
+    "mean": 3.8,
+    "n_diffs": [
+     5,
+     4
+    ],
+    "seconds": 39.8
+   },
+   {
+    "image": "coastal_cliff_palace_city_r02_compare.jpg",
+    "ref": 3.0,
+    "scores": [
+     2.0,
+     4.0
+    ],
+    "mean": 3.0,
+    "n_diffs": [
+     5,
+     4
+    ],
+    "seconds": 37.1
+   },
+   {
+    "image": "coastal_cliff_palace_city_r09_compare.jpg",
+    "ref": 3.0,
+    "scores": [
+     1.0,
+     3.6
+    ],
+    "mean": 2.3,
+    "n_diffs": [
+     5,
+     5
+    ],
+    "seconds": 37.5
+   },
+   {
+    "image": "coastal_cliff_palace_city_r18_compare.jpg",
+    "ref": 3.5,
+    "scores": [
+     5.2,
+     4.6
+    ],
+    "mean": 4.9,
+    "n_diffs": [
+     5,
+     5
+    ],
+    "seconds": 37.9
+   }
+  ],
+  "mae_vs_ref": 1.66,
+  "spearman_vs_ref": 0.5,
+  "repeat_spread": 1.63,
+  "avg_seconds": 39.1
+ }
+}

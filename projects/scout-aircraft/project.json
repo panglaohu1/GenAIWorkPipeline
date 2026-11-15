@@ -1,0 +1,12 @@
+{
+ "id": "scout-aircraft",
+ "name": "侦察飞机（TigerMessenger scoutAircraft）",
+ "mode": "asset",
+ "description": "低多边形玩具感单座侦察机。验证单物体蓝图建模 + JEV 差异迭代。",
+ "target": "inputs/target.png",
+ "source": "TigerMessenger/assets/concepts/scoutAircraft-target-v1.png（只读复制）",
+ "runs": [
+  "20260925-100718-4c74",
+  "20260925-210545-c0f2"
+ ]
+}
