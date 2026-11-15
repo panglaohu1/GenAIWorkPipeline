@@ -33,3 +33,5 @@ projects/*/_backup_*/
 # 超出 GitHub 建议体积的中间资产：大模型与重复字体副本
 projects/oskar-trials/planet_game/assets/*.glb
 projects/oskar-trials/planet_game/addons/pipeline/fonts/*.otf
+# 本地工作区会话数据（工具记忆与状态，不入库）
+.workbuddy/
