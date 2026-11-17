@@ -3,7 +3,28 @@ const $=s=>document.querySelector(s),host=$('#globe');let id=new URLSearchParams
 const renderer=new THREE.WebGLRenderer({antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));host.prepend(renderer.domElement);renderer.setClearColor('#e6f2f5');const scene=new THREE.Scene(),camera=new THREE.PerspectiveCamera(40,1,.1,5000);scene.add(new THREE.HemisphereLight(0xffffff,0x64777c,2));const sun=new THREE.DirectionalLight(0xffffff,2);sun.position.set(3,5,4);scene.add(sun);let surface,ocean,wire,marker;let inlandObjects=[],townObjects=[],brushTool='select',brushPoints=[],brushMarkers=[],editing=false;let azimuth=.8,polar=1.05,distance=600,R=160,focusPoint=null;let lakeEditContext=null,selectionOutline=null;
 function resize(){renderer.setSize(host.clientWidth,host.clientHeight,false);camera.aspect=host.clientWidth/host.clientHeight;camera.updateProjectionMatrix()}new ResizeObserver(resize).observe(host);
 function animate(){requestAnimationFrame(animate);camera.position.set(distance*Math.sin(polar)*Math.cos(azimuth),distance*Math.cos(polar),distance*Math.sin(polar)*Math.sin(azimuth));if(focusPoint){camera.position.add(focusPoint);camera.lookAt(focusPoint)}else camera.lookAt(0,0,0);renderer.render(scene,camera);if(window.planetPreview?.ready)window.planetPreview.frameRendered=true}animate();
-let drag=null;renderer.domElement.onpointerdown=e=>{drag={x:e.clientX,y:e.clientY,startX:e.clientX,startY:e.clientY};renderer.domElement.setPointerCapture(e.pointerId)};renderer.domElement.onpointermove=e=>{if(lakeEditContext)lakeHover(e);if(!drag)return;azimuth-=(e.clientX-drag.x)*.006;polar=THREE.MathUtils.clamp(polar+(e.clientY-drag.y)*.006,.07,Math.PI-.07);drag.x=e.clientX;drag.y=e.clientY};renderer.domElement.onpointerup=e=>{if(drag&&Math.hypot(e.clientX-drag.startX,e.clientY-drag.startY)<8&&surface){if(lakeEditContext){lakeEditClick(e);drag=null;return}const rect=renderer.domElement.getBoundingClientRect(),ray=new THREE.Raycaster();ray.setFromCamera(new THREE.Vector2((e.clientX-rect.left)/rect.width*2-1,-(e.clientY-rect.top)/rect.height*2+1),camera);const hit=ray.intersectObject(surface)[0];if(hit){const d=hit.point.normalize();if(brushTool!=='select'){addBrushPoint(d.toArray());drag=null;return}const region=data.regions.reduce((a,b)=>new THREE.Vector3(...a.direction).dot(d)>new THREE.Vector3(...b.direction).dot(d)?a:b);selectRegion(region.id)}}drag=null};renderer.domElement.onwheel=e=>{e.preventDefault();distance=THREE.MathUtils.clamp(distance*Math.exp(e.deltaY*.001),focusPoint?10:R*1.3,focusPoint?R*3:R*8)};renderer.domElement.addEventListener('wheel',e=>e.preventDefault(),{passive:false});
+let drag=null;renderer.domElement.onpointerdown=e=>{
+ if(lakeEditContext&&(e.button===0||e.button===2)){
+  lakeStroke={cells:new Set()};
+  lakeEditClick(e,e.button===2);
+  renderer.domElement.setPointerCapture(e.pointerId);
+  return;
+ }
+ drag={x:e.clientX,y:e.clientY,startX:e.clientX,startY:e.clientY};renderer.domElement.setPointerCapture(e.pointerId)};renderer.domElement.onpointermove=e=>{
+ if(lakeEditContext){
+  lakeHover(e);
+  if(lakeStroke){
+   if(e.buttons&2)lakeStrokeStep(e,true);
+   else if(e.buttons&1)lakeStrokeStep(e,false);
+   return;
+  }
+ }
+ if(!drag)return;azimuth-=(e.clientX-drag.x)*.006;polar=THREE.MathUtils.clamp(polar+(e.clientY-drag.y)*.006,.07,Math.PI-.07);drag.x=e.clientX;drag.y=e.clientY};renderer.domElement.onpointerup=e=>{
+ if(lakeStroke){
+  lakeStroke=null;
+  return;
+ }
+ if(drag&&Math.hypot(e.clientX-drag.startX,e.clientY-drag.startY)<8&&surface){if(lakeEditContext){lakeEditClick(e);drag=null;return}const rect=renderer.domElement.getBoundingClientRect(),ray=new THREE.Raycaster();ray.setFromCamera(new THREE.Vector2((e.clientX-rect.left)/rect.width*2-1,-(e.clientY-rect.top)/rect.height*2+1),camera);const hit=ray.intersectObject(surface)[0];if(hit){const d=hit.point.normalize();if(brushTool!=='select'){addBrushPoint(d.toArray());drag=null;return}const region=data.regions.reduce((a,b)=>new THREE.Vector3(...a.direction).dot(d)>new THREE.Vector3(...b.direction).dot(d)?a:b);selectRegion(region.id)}}drag=null};renderer.domElement.onwheel=e=>{e.preventDefault();distance=THREE.MathUtils.clamp(distance*Math.exp(e.deltaY*.001),focusPoint?10:R*1.3,focusPoint?R*3:R*8)};renderer.domElement.addEventListener('wheel',e=>e.preventDefault(),{passive:false});
 function selectRegion(regionId){selected=data.regions.find(r=>r.id===regionId);if(!selected)return;$('#regionSelect').value=selected.id;$('#region').replaceChildren();for(const text of ['区域 '+selected.id,selected.land?'陆地':'海域','地表高度 '+selected.height.toFixed(2),'邻接 '+selected.neighbors.join('、'),'场景实例：'+(data.sceneInstances||[]).filter(s=>data.regions.reduce((a,b)=>new THREE.Vector3(...a.direction).dot(new THREE.Vector3(...s.center))>new THREE.Vector3(...b.direction).dot(new THREE.Vector3(...s.center))?a:b).id===selected.id).length]){const p=document.createElement('p');p.textContent=text;$('#region').append(p)}if(marker){scene.remove(marker);marker.geometry.dispose();marker.material.dispose()}marker=new THREE.Mesh(new THREE.SphereGeometry(R*.018,12,8),new THREE.MeshBasicMaterial({color:0x087a89,depthTest:false}));marker.renderOrder=10;marker.visible=!new URLSearchParams(location.search).has('embed');marker.position.fromArray(selected.direction).multiplyScalar(R+selected.height+R*.02);scene.add(marker);$('#reserve').disabled=!version||data.checks.closed!==true||currentStatus!=='terrain_checked';window.planetPreview.selected=selected}
 function load(payload){if(selectionOutline){scene.remove(selectionOutline);selectionOutline.geometry.dispose();selectionOutline.material.dispose();selectionOutline=null;}for(const o of inlandObjects){scene.remove(o);o.geometry.dispose();o.material.dispose()}inlandObjects=[];for(const o of townObjects){scene.remove(o);o.geometry.dispose();o.material.dispose()}townObjects=[];data=payload.planet;version=payload.state.version;R=data.recipe.radius;distance=R*3.2;focusPoint=null;for(const o of [surface,ocean,wire,marker])if(o){scene.remove(o);o.geometry.dispose();o.material.dispose()}marker=null;const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(data.mesh.positions,3));g.setAttribute('color',new THREE.Float32BufferAttribute(data.mesh.colors,3));g.setIndex(data.mesh.indices);g.computeVertexNormals();surface=new THREE.Mesh(g,new THREE.MeshStandardMaterial({vertexColors:true,roughness:1}));scene.add(surface);ocean=new THREE.Mesh(new THREE.SphereGeometry(R+data.recipe.seaLevel+.08,128,64),new THREE.MeshStandardMaterial({color:0x74b3c5,roughness:.5}));scene.add(ocean);wire=new THREE.LineSegments(new THREE.WireframeGeometry(g),new THREE.LineBasicMaterial({color:0x386875,transparent:true,opacity:.25}));wire.visible=$('#wire').checked;scene.add(wire);for(const w of data.inlandWater||[]){const wg=new THREE.BufferGeometry();wg.setAttribute('position',new THREE.Float32BufferAttribute(w.positions,3));wg.setIndex(w.indices);wg.computeVertexNormals();const wm=new THREE.Mesh(wg,new THREE.MeshStandardMaterial({color:0x62acbf,roughness:.5,side:THREE.DoubleSide}));scene.add(wm);inlandObjects.push(wm)}$('#regionSelect').replaceChildren();for(const r of data.regions){const o=document.createElement('option');o.value=r.id;o.textContent=r.id+' · '+(r.land?'陆地':'海域');$('#regionSelect').append(o)}$('#stats').replaceChildren();const rows=[['半径',R],['顶点',data.stats.vertices],['三角面',data.stats.triangles],['全球区域',data.stats.regions],['采样陆地点占比',(100*data.stats.sampledLandRatio).toFixed(1)+'%'],['高度范围',data.stats.minHeight.toFixed(2)+'–'+data.stats.maxHeight.toFixed(2)],['导航图节点',data.navigation.nodes],['湖区场景',(data.sceneInstances||[]).length],['湖区建筑',(data.sceneInstances||[]).reduce((n,s)=>n+s.buildings.length,0)]];for(const [a,b]of rows){const el=document.createElement('div');el.textContent=a+'：'+b;$('#stats').append(el)}$('#checks').replaceChildren();for(const [a,b]of [['编译器',data.checks.compiler],['完整采样球面闭合',data.checks.closed],['有限坐标',data.checks.finite],['Euler = 2',data.checks.euler===2],...Object.entries(data.checks.reports).map(([k,v])=>[k,v.ok])]){const el=document.createElement('div');el.textContent=(b?'✓ ':'✕ ')+a;$('#checks').append(el)}$('#version').textContent=version||'等待版本';$('#hint').textContent='整颗星球 · 拖动旋转 · 点击选区';
 for(const town of data.sceneInstances||[]){const tg=new THREE.BufferGeometry();tg.setAttribute('position',new THREE.Float32BufferAttribute(town.mesh.positions,3));tg.setAttribute('color',new THREE.Float32BufferAttribute(town.mesh.colors,3));tg.computeVertexNormals();const tm=new THREE.Mesh(tg,new THREE.MeshStandardMaterial({vertexColors:true,roughness:1,side:THREE.DoubleSide}));tm.userData.sceneId=town.id;scene.add(tm);townObjects.push(tm)}
@@ -87,7 +108,7 @@ window.addEventListener('focus',()=>{if(data&&!editing){loaded=null;poll()}});
    单元格 3.6×3.6，台基 3.6×3.6，楼体 4 边、每层 2.2m，屋顶 0.99m。 */
 const LAKE_CELL=3.6,LAKE_LEVEL=.45,LAKE_FLOOR=2.2,LAKE_ROOF=.99,LAKE_MAX_FLOORS=5,LAKE_MAX_BLOCKS=64;
 const LAKE_PALETTE=[[.85,.49,.35],[.89,.77,.48],[.45,.63,.67],[.61,.68,.48],[.67,.56,.7]],LAKE_STONE=[.61,.62,.57];
-let lakeBlocks=[],lakeGhost=null,lakeGhostFill=null,lakeGhostEdge=null,lakeColorChoice=-1;
+let lakeBlocks=[],lakeGhost=null,lakeGhostFill=null,lakeGhostEdge=null,lakeColorChoice=-1,lakeFloors=1,lakeStroke=null;
 const lakeHighlightLegacy=window.planetLakeEditor.highlight.bind(window.planetLakeEditor);
 
 const lakeSceneTown=()=>(data?.sceneInstances||[]).find(s=>s.id===lakeEditContext?.sceneId);
@@ -221,14 +242,14 @@ function lakeGhostHide(){
  if(lakeGhost)lakeGhost.visible=false;
 }
 /* 指针下的目标单元：点楼顶=叠层，点墙面=往该侧延伸，点水面=放置。 */
-function lakeResolve(event){
+function lakeResolve(event,forceErase=false){
  const town=lakeSceneTown();
  if(!town?.frame)return null;
  const {N,U,V,O}=lakeBasis(town);
  const rect=renderer.domElement.getBoundingClientRect();
  const ray=new THREE.Raycaster();
  ray.setFromCamera(new THREE.Vector2((event.clientX-rect.left)/rect.width*2-1,-(event.clientY-rect.top)/rect.height*2+1),camera);
- const erase=event.button===2||event.shiftKey;
+ const erase=forceErase||event.button===2||event.shiftKey;
  const paint=!erase&&event.altKey;
  const mesh=lakeTownMesh(),hits=mesh?ray.intersectObject(mesh):[];
  if(hits.length){
@@ -281,9 +302,10 @@ function lakeResolve(event){
   kind:'stack',cell:{x,z},baseH:LAKE_LEVEL+existing.floors*LAKE_FLOOR,height:LAKE_FLOOR+LAKE_ROOF,valid:existing.floors<LAKE_MAX_FLOORS,
   intent:{action:'stack',building_id:existing.id,floors:Math.min(LAKE_MAX_FLOORS,existing.floors+1),color:existing.color,x,z}
  };
+ const floors=Math.max(1,Math.min(LAKE_MAX_FLOORS,lakeFloors));
  return {
-  kind:'place',cell:{x,z},baseH:LAKE_LEVEL-.2,height:LAKE_FLOOR+LAKE_ROOF,valid:lakeCanBuild(x,z)&&lakeBlocks.length<LAKE_MAX_BLOCKS,
-  intent:{action:'place',x,z,floors:1,color:lakePickColor(x,z)}
+  kind:'place',cell:{x,z},baseH:LAKE_LEVEL-.2,height:floors*LAKE_FLOOR+LAKE_ROOF,valid:lakeCanBuild(x,z)&&lakeBlocks.length<LAKE_MAX_BLOCKS,
+  intent:{action:'place',x,z,floors,color:lakePickColor(x,z)}
  };
 }
 function lakeHover(event){
@@ -326,11 +348,21 @@ function lakeOptimistic(result){
  }
  lakeApplyBlocks(town);
 }
-function lakeEditClick(event){
+/* 按住拖动时沿经过的格子连续建造 / 拆除：同样一格只处理一次。 */
+function lakeStrokeStep(event,erase){
+ if(!lakeEditContext)return;
+ const result=lakeResolve(event,erase);
+ if(!result)return;
+ const key=result.cell.x.toFixed(1)+':'+result.cell.z.toFixed(1);
+ if(lakeStroke.cells.has(key))return;
+ lakeStroke.cells.add(key);
+ lakeEditClick(event,erase);
+}
+function lakeEditClick(event,forceErase=false){
  if(!lakeEditContext)return;
  const town=lakeSceneTown();
  if(!town)return;
- const result=lakeResolve(event);
+ const result=lakeResolve(event,forceErase);
  if(!result)return;
  if(!result.valid){
   lakeSay(result.kind==='stack'?'这栋已经到 5 层上限。':'这里不在有效湖面上，台基没有湖底承托；换个位置再点。');
@@ -353,6 +385,7 @@ Object.assign(window.planetLakeEditor,{
  enable(sceneId,options={}){
   lakeEditContext={sceneId};
   lakeColorChoice=Number.isInteger(options.color)?options.color:-1;
+  lakeFloors=Number.isInteger(options.floors)?options.floors:lakeFloors;
   const town=lakeSceneTown();
   lakeBlocks=lakeBlocksOf(town);
   host.style.cursor='crosshair';
@@ -368,6 +401,9 @@ Object.assign(window.planetLakeEditor,{
  setColor(index){
   lakeColorChoice=Number.isInteger(index)?index:-1;
  },
+ setFloors(count){
+  lakeFloors=Math.max(1,Math.min(LAKE_MAX_FLOORS,Number(count)||1));
+ },
  highlight(buildingId){
   lakeHighlightLegacy(buildingId);
  },
@@ -380,8 +416,15 @@ Object.assign(window.planetLakeEditor,{
  },
  get context(){
   return lakeEditContext;
- },
- get blocks(){
+ }
+});
+Object.defineProperty(window.planetLakeEditor,'floors',{
+ get(){
+  return lakeFloors;
+ }
+});
+Object.defineProperty(window.planetLakeEditor,'blocks',{
+ get(){
   return lakeBlocks.map(block=>({
    ...block
   }));

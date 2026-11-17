@@ -53,11 +53,36 @@ editor.className='panel-bar';
 editor.id='boundBuildingEditor';
 editor.hidden=true;
 editor.style.cssText='flex-wrap:wrap;gap:10px;align-items:center';
+let buildFloors=1;
 const buildHint=document.createElement('span');
 buildHint.className='muted';
 buildHint.style.cssText='flex:1 1 300px;min-width:240px;white-space:normal;line-height:1.5';
-buildHint.textContent='左键点水面 放一块 · 点楼顶 叠一层 · 点墙面 往外长 · 右键或 Shift 点击 削一层 · Alt 点击 涂当前颜色';
+buildHint.textContent='按住左键在湖面拖动 连续长楼 · 点楼顶 叠一层 · 点墙面 往外长 · 按住右键拖动 连续削层 · Alt 点击 涂当前颜色 · Esc 退出';
+const buildCount=document.createElement('span');
+buildCount.id='buildCount';
+buildCount.className='badge';
+buildCount.textContent='0 栋';
+editor.append(buildCount);
 editor.append(buildHint);
+const floorWrap=document.createElement('label');
+floorWrap.className='muted';
+floorWrap.style.cssText='display:inline-flex;gap:4px;align-items:center';
+floorWrap.append(document.createTextNode('层数'));
+const floorSelect=document.createElement('select');
+floorSelect.id='buildFloors';
+floorSelect.style.cssText='width:64px;padding:3px 4px';
+for(const n of [1,2,3,4,5]){
+ const option=document.createElement('option');
+ option.value=String(n);
+ option.textContent=n+' 层';
+ floorSelect.append(option);
+}
+floorSelect.onchange=()=>{
+ buildFloors=Number(floorSelect.value)||1;
+ frame.contentWindow?.planetLakeEditor?.setFloors?.(buildFloors);
+};
+floorWrap.append(floorSelect);
+editor.append(floorWrap);
 const swatchRow=document.createElement('span');
 swatchRow.style.cssText='display:inline-flex;gap:5px;align-items:center';
 const swatchLabel=document.createElement('span');
@@ -102,12 +127,19 @@ function activeTown(){
 }
 function syncEditorState(){
  const town=activeTown();
+ buildCount.textContent=(town?.buildings?.length??0)+' 栋 / 64';
  const ready=Boolean(buildingEditing&&town&&frame.contentWindow?.planetLakeEditor?.applyScene);
  undoBuilding.disabled=!ready||buildPumping;
  swatchRow.querySelectorAll('button').forEach(button=>{
   button.disabled=!ready;
  });
 }
+document.addEventListener('keydown',event=>{
+ if(event.key==='Escape'&&buildingEditing){
+  event.preventDefault();
+  $('#edit').click();
+ }
+});
 function bindEditor(attempt=0){
  const town=activeTown();
  if(!buildingEditing||!town)return;
@@ -117,7 +149,7 @@ function bindEditor(attempt=0){
   return;
  }
  if(!editorApi.enable(town.id,{
-  color:buildColor
+  color:buildColor,floors:buildFloors
  })&&attempt<60)setTimeout(()=>bindEditor(attempt+1),200);
  syncEditorState();
 }
@@ -146,6 +178,7 @@ async function runOperation(operation){
  adopted=null;
  log('建造 · '+describeOperation(operation)+' → 现在 '+result.scene.buildings.length+' 栋');
  notice('已写回原星球：'+result.scene.buildings.length+' 栋建筑。撤销可回退。');
+ syncEditorState();
 }
 async function pumpBuilds(){
  if(buildPumping)return;
