@@ -35,3 +35,6 @@ projects/oskar-trials/planet_game/assets/*.glb
 projects/oskar-trials/planet_game/addons/pipeline/fonts/*.otf
 # 本地工作区会话数据（工具记忆与状态，不入库）
 .workbuddy/
+# REA 学习证据保留本机；源码与文档可单独入库
+engines/REACodeRefactoring/artifacts/
+archive/

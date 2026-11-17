@@ -40,12 +40,16 @@ async def read_only_guard(request: Request, call_next):
     origin = request.headers.get("origin")
     if mutation and origin and origin.rstrip("/") != str(request.base_url).rstrip("/"):
         return JSONResponse({"detail": "请求来源不匹配"}, status_code=403)
-    public = path in ("/api/auth/status", "/api/auth/login", "/api/auth/setup", "/api/auth/register")
+    public = path in ("/api/auth/status", "/api/auth/login", "/api/auth/setup", "/api/auth/register", "/api/reacode/demo", "/api/reacode/planet-latest") or (request.method == "GET" and path.startswith("/api/reacode/planet-data/"))
     if path.startswith("/api/") and not public and not auth.user(request.cookies.get(COOKIE)):
         return JSONResponse({"detail": "请先登录"}, status_code=401)
     if READ_ONLY and mutation and not path.startswith("/api/auth/"):
         return JSONResponse({"detail": "当前控制台为只读预览，不能修改或执行任务"}, status_code=403)
-    return await call_next(request)
+    response = await call_next(request)
+    if path in ("/static/reacode.html", "/static/rea-workshop.css", "/static/rea-workshop.js", "/static/rea-workshop-worker.js"):
+        response.headers["Cache-Control"] = "no-store, max-age=0"
+        response.headers["Pragma"] = "no-cache"
+    return response
 
 
 @app.get("/api/auth/status")
@@ -487,6 +491,9 @@ def runs() -> list[dict]:
     out = []
     for r in store.list_runs(200):
         r["stages"] = [{"name": s["name"], "status": s["status"]} for s in store.stages(r["id"])]
+        if "scene_recipe" in r["options"]:
+            recipe=r["options"]["scene_recipe"]
+            r["options"]["scene_recipe"]={"scene":recipe.get("scene"),"steps":recipe.get("steps"),"snapshot_saved":True}
         quality = assess(r, _read_state(r["id"]))
         r["quality"] = {k: quality[k] for k in ("status", "label", "failed_count", "unknown_count", "suggested_stage")}
         if 'learning_sources' in r['options']:
@@ -522,6 +529,10 @@ async def create_run(brief: str = Form(...), mode: str = Form("game"), title: st
     if mode == 'consult':
         raise HTTPException(400, '请从已有作品的邀请顾问入口提交')
     opts = json.loads(options or "{}")
+    if mode == "rea_scene":
+        from ..reacode.scene_pipeline import validate_recipe
+        try: validate_recipe(opts.get("scene_recipe"))
+        except ValueError as exc: raise HTTPException(400,str(exc))
     try:
         run_id = orch.submit(title, brief, mode, opts, start=False)
     except ValueError as exc:
@@ -558,7 +569,12 @@ def run_detail(run_id: str) -> dict:
         raise HTTPException(404)
     state = _read_state(run_id)
     c = orch.control(run_id)
-    return {"run": run, "stages": store.stages(run_id), "artifacts": store.artifacts(run_id), "state": state,
+    related=[];scene_count=0
+    if run['mode']=='rea_planet':
+        related=[{'id':r['id'],'status':r['status'],'binding':r['options']['planet_binding']} for r in store.list_runs(500) if r['mode']=='rea_bound_scene' and r['options'].get('planet_binding',{}).get('planet_run')==run_id]
+        scenes_file=RUNS/run_id/'lake-scenes.json'
+        if scenes_file.exists():scene_count=sum(s.get('terrainVersion')==state.get('rea_planet',{}).get('version') for s in json.loads(scenes_file.read_text()))
+    return {"related_scene_runs":related,"scene_instance_count":scene_count,"run": run, "stages": store.stages(run_id), "artifacts": store.artifacts(run_id), "state": state,
             "quality": assess(run, state),
             "comparison": consultation.comparison(store, run, state),
             "control": {"paused": c.paused,
@@ -774,3 +790,322 @@ async def stream(request: Request):
 
 if not READ_ONLY:
     _muse_bridge()  # 放在文件末尾：线程里用到的 _link_run 等函数都已定义
+
+
+# Project-owned REA engine and learning workshop.
+@app.get("/api/reacode/learning")
+def rea_learning():
+    from ..reacode.workshop import learning
+    return learning()
+
+@app.get("/api/reacode/candidates")
+def rea_candidates():
+    from ..reacode.workshop import records
+    return records()
+
+@app.post("/api/reacode/candidates")
+async def rea_execute(body: dict):
+    from ..reacode.workshop import execute
+    try:
+        return await execute(body)
+    except (ValueError, KeyError, RuntimeError) as exc:
+        raise HTTPException(400, str(exc))
+
+@app.post("/api/reacode/candidates/{cid}")
+def rea_decide(cid: str, body: dict):
+    from ..reacode.workshop import decide
+    try:
+        return decide(cid, body)
+    except (ValueError, KeyError, FileNotFoundError) as exc:
+        raise HTTPException(409, str(exc))
+
+app.mount("/engines/REACodeRefactoring", StaticFiles(directory=config.ROOT / "engines/REACodeRefactoring"), name="reacode")
+
+
+@app.get("/api/reacode/demo")
+def rea_demo():
+    for run in store.list_runs(100):
+        if run["mode"] == "rea_game":
+            state = _read_state(run["id"]).get("rea_game", {})
+            return {"title":run["title"],"status":run["status"],"plan":state.get("plan"),"url":state.get("url"),"runtime_verified":state.get("runtime_verified",False)}
+    return {}
+
+
+@app.get("/api/reacode/scene-runs/{run_id}")
+def rea_scene_result(run_id: str):
+    run=store.get_run(run_id)
+    if not run or run["mode"]!="rea_scene":raise HTTPException(404)
+    state=_read_state(run_id).get("rea_scene",{})
+    result={"run_id":run_id,"status":run["status"],"stage":run.get("current_stage"),"error":run.get("error"),"state":state}
+    if state.get("runtime_verified"):
+        path=RUNS/run_id/"scene-candidate.json"
+        candidate=json.loads(path.read_text())
+        from ..reacode.workshop import _load
+        current=_load(candidate['id'])
+        result["candidate"]=json.loads(current.read_text()) if current.exists() else candidate
+    return result
+
+
+@app.get("/api/reacode/planet-latest")
+def rea_planet_latest():
+    for run in store.list_runs(500):
+        if run['mode']=='rea_planet':
+            return {'id':run['id'],'status':run['status'],'stage':run.get('current_stage'),'error':run.get('error'),'state':_read_state(run['id']).get('rea_planet',{})}
+    return {}
+
+def _node_failure(text: str) -> str:
+    """把 Node 的堆栈压成一句可读原因：界面只需要「建筑台基重叠」这类结论。"""
+    import re
+    lines = [line.strip() for line in (text or '').strip().splitlines() if line.strip()]
+    for line in reversed(lines):
+        match = re.search(r'(?:Error|RangeError|TypeError|SyntaxError):\s*(.+)$', line)
+        if match:
+            return match.group(1).strip()[:300]
+    return (lines[-1] if lines else '建筑计算失败')[:300]
+
+
+def _lake_scene_revision(scene):
+    import hashlib
+    return hashlib.sha256(json.dumps({k:v for k,v in scene.items() if k!='sceneRevision'},sort_keys=True,separators=(',',':')).encode()).hexdigest()
+
+@app.get("/api/reacode/planet-data/{run_id}")
+def rea_planet_data(run_id: str, candidate: str | None = None):
+    run=store.get_run(run_id)
+    if not run or run['mode']!='rea_planet':raise HTTPException(404)
+    p=RUNS/run_id/'planet.json'
+    if not p.exists():raise HTTPException(409,'全球地形还未编译完成')
+    state=_read_state(run_id).get('rea_planet',{})
+    data=json.loads(p.read_text());scene_file=RUNS/run_id/'lake-scenes.json'
+    scenes=json.loads(scene_file.read_text()) if scene_file.exists() else []
+    data['sceneInstances']=[scene for scene in scenes if scene.get('terrainVersion')==state.get('version')]
+    if candidate:
+        if not candidate.startswith('lake-town-') or not candidate[10:].isalnum():raise HTTPException(400,'无效候选ID')
+        path=RUNS/run_id/(candidate+'.candidate.json')
+        if not path.exists():raise HTTPException(404,'候选不存在')
+        record=json.loads(path.read_text());scene=record['scene']
+        if record['status']!='candidate' or scene['terrainVersion']!=state.get('version'):raise HTTPException(409,'候选已经失效')
+        data['sceneInstances']=[s for s in data['sceneInstances'] if s['lakeIndex']!=scene['lakeIndex']]+[scene]
+
+    for scene in data['sceneInstances']:scene['sceneRevision']=_lake_scene_revision(scene)
+    data['sceneTasks']=[{'id':r['id'],'status':r['status'],'stage':r.get('current_stage'),'binding':r['options']['planet_binding']} for r in store.list_runs(500) if r['mode']=='rea_bound_scene' and r['options'].get('planet_binding',{}).get('planet_run')==run_id]
+    return {'run_id':run_id,'state':state,'planet':data}
+
+@app.post("/api/reacode/planet-region/{run_id}")
+def rea_planet_region(run_id: str, body: dict):
+    run=store.get_run(run_id)
+    if not run or run['mode']!='rea_planet':raise HTTPException(404)
+    state=_read_state(run_id).get('rea_planet',{})
+    if state.get('status')!='terrain_checked':raise HTTPException(409,'请先完成全球地形检查')
+    if body.get('terrain_version')!=state.get('version'):raise HTTPException(409,'地形版本已变化，请重新选区')
+    data=json.loads((RUNS/run_id/'planet.json').read_text());region=next((r for r in data['regions'] if r['id']==body.get('region_id')),None)
+    if not region:raise HTTPException(400,'区域不存在')
+    binding={'planet_run':run_id,'terrain_version':state['version'],'region':region,'status':'reserved_for_scene','scene_created':False}
+    path=RUNS/run_id/'selected-region.json';path.write_text(json.dumps(binding,ensure_ascii=False,indent=2))
+    store.event(run_id,None,'result','已选择后续场景区域：'+region['id'],{'region_id':region['id']})
+    return binding
+
+# Edits are serialized per globe and revision-bound, so stale browser tabs cannot overwrite work.
+_planet_edit_locks: dict[str, asyncio.Lock] = {}
+
+@app.post('/api/reacode/planet-edit/{run_id}')
+async def rea_planet_edit(run_id: str, body: dict):
+    import hashlib
+    import uuid
+    from ..capabilities.bridge import node_path
+    lock=_planet_edit_locks.setdefault(run_id,asyncio.Lock())
+    async with lock:
+        run=store.get_run(run_id)
+        if not run or run['mode']!='rea_planet':raise HTTPException(404)
+        if run['status'] in ('running','pending'):raise HTTPException(409,'当前任务仍在运行，请完成后再编辑')
+        state=_read_state(run_id);terrain=state.get('rea_planet',{})
+        if terrain.get('status') not in ('terrain_checked','terrain_edited'):raise HTTPException(409,'请先完成初始全球地形检查')
+        if body.get('terrain_version')!=terrain.get('version'):raise HTTPException(409,'地形版本已变化，请刷新后再编辑')
+        directory=RUNS/run_id;planet=directory/'planet.json'
+        if not planet.exists():raise HTTPException(409,'尚无可编辑的全球地形')
+        history=directory/'terrain-history';history.mkdir(exist_ok=True)
+        backups=sorted(history.glob('*.json'))
+        temporary=directory/('terrain-'+uuid.uuid4().hex+'.tmp')
+        if body.get('undo'):
+            if not backups:raise HTTPException(409,'没有可以撤销的地形修改')
+            temporary.write_bytes(backups[-1].read_bytes())
+        else:
+            proc=await asyncio.create_subprocess_exec(node_path(),str(config.ROOT/'src/genai_pipeline/reacode/planet-edit.mjs'),stdin=asyncio.subprocess.PIPE,stdout=asyncio.subprocess.PIPE,stderr=asyncio.subprocess.PIPE)
+            try:
+                _,error=await asyncio.wait_for(proc.communicate(json.dumps({'input':str(planet),'out':str(temporary),'operation':body.get('operation')}).encode()),30)
+            except asyncio.TimeoutError:
+                proc.kill();await proc.wait();temporary.unlink(missing_ok=True);raise HTTPException(408,'地形编辑计算超时')
+            if proc.returncode:
+                temporary.unlink(missing_ok=True);raise HTTPException(400,_node_failure(error.decode()))
+            shutil.copy2(planet,history/f'{time.time_ns()}.json')
+        data=json.loads(temporary.read_text());temporary.replace(planet)
+        if body.get('undo'):backups[-1].unlink()
+        version=hashlib.sha256(planet.read_bytes()).hexdigest()
+        terrain.update(version=version,status='terrain_edited' if data.get('editRevision') else 'terrain_checked',stats=data['stats'],checks=data['checks'],navigation=data['navigation'],capabilities=data.get('capabilities',[]))
+        if data.get('editRevision'):terrain.pop('browser',None)
+        state_file=directory/'state.json';temp_state=directory/'state.terrain.tmp';temp_state.write_text(json.dumps(state,ensure_ascii=False,indent=2));temp_state.replace(state_file)
+        (directory/'selected-region.json').unlink(missing_ok=True)
+        store.event(run_id,None,'result','撤销地形修改' if body.get('undo') else '已执行地形编辑能力',{'version':version,'revision':data.get('editRevision',0)})
+        return {'run_id':run_id,'state':terrain,'planet':data}
+
+@app.post('/api/reacode/planet-lake-scene/{run_id}')
+async def rea_planet_lake_scene(run_id: str, body: dict):
+    import uuid
+    from ..capabilities.bridge import node_path
+    from ..llm import LLM
+    lock=_planet_edit_locks.setdefault(run_id,asyncio.Lock())
+    async with lock:
+        run=store.get_run(run_id)
+        if not run or run['mode']!='rea_planet':raise HTTPException(404)
+        if run['status'] in ('running','pending'):raise HTTPException(409,'请等待全球任务完成')
+        state=_read_state(run_id).get('rea_planet',{})
+        if body.get('terrain_version')!=state.get('version'):raise HTTPException(409,'地形版本已变化，请重新选择湖泊')
+        if state.get('status') not in ('terrain_checked','terrain_edited'):raise HTTPException(409,'全球地形尚未就绪')
+        lake=body.get('lake_index')
+        if type(lake) is not int or lake<0:raise HTTPException(400,'请选择有效湖泊')
+        count=body.get('count',8);floors=body.get('floors',2)
+        def validate_plan(p):
+            if not isinstance(p,dict) or type(p.get('count')) is not int or not 1<=p['count']<=32 or type(p.get('floors')) is not int or not 1<=p['floors']<=5:return 'count需为1–32整数，floors需为1–5整数'
+        plan={'count':count,'floors':floors,'rationale':'按用户参数调用本机湖区建筑能力'}
+        if validate_plan(plan):raise HTTPException(400,validate_plan(plan))
+        if body.get('use_model',True):
+            plan=await LLM('main').json([{'role':'system','content':'你是本地湖区建筑规划器。可执行能力：REA多层房屋模块、湖底承托台基、局部平面坐标映射。必须使用湖底承托台基和局部平面坐标映射，它们只生成建筑几何，不修改湖底地形或湖面。你只能根据要求选择count整数1–32、floors整数1–5、rationale中文说明，不能声称关闭、禁用、跳过承托或变形。不要声称尚未执行的检查通过。仅输出JSON。'},{'role':'user','content':json.dumps({'goal':str(body.get('brief','湖面建造彩色水上小镇'))[:2000],'preferred_count':count,'preferred_floors':floors},ensure_ascii=False)}],validate=validate_plan,thinking_budget=512,retries=1)
+        if body.get('use_model',True):
+            plan['model_note']=plan.get('rationale','')
+            plan['rationale']=f"本地模型选择{plan['count']}栋、每栋{plan['floors']}层；固定执行REA房屋模块、湖底承托台基与局部平面坐标映射，不修改地形和湖面。"
+        directory=RUNS/run_id;scene_id='lake-town-'+uuid.uuid4().hex[:12];temporary=directory/(scene_id+'.tmp')
+        options={'lakeIndex':lake,'count':plan['count'],'floors':plan['floors'],'terrainVersion':state['version'],'sceneId':scene_id}
+        proc=await asyncio.create_subprocess_exec(node_path(),str(config.ROOT/'src/genai_pipeline/reacode/lake-town.mjs'),stdin=asyncio.subprocess.PIPE,stdout=asyncio.subprocess.PIPE,stderr=asyncio.subprocess.PIPE)
+        try:_,error=await asyncio.wait_for(proc.communicate(json.dumps({'input':str(directory/'planet.json'),'out':str(temporary),'options':options}).encode()),90)
+        except asyncio.TimeoutError:
+            proc.kill();await proc.wait();temporary.unlink(missing_ok=True);raise HTTPException(408,'湖区建造超时')
+        if proc.returncode:
+            temporary.unlink(missing_ok=True);raise HTTPException(400,_node_failure(error.decode()))
+        scene=json.loads(temporary.read_text());temporary.unlink();scene['plan']=plan
+        if body.get('candidate_only'):
+            import hashlib
+            current=directory/'lake-scenes.json'
+            before=current.read_bytes() if current.exists() else b'[]'
+            record={'status':'candidate','scene':scene,'before':json.loads(before),'before_hash':hashlib.sha256(before).hexdigest()}
+            (directory/(scene_id+'.candidate.json')).write_text(json.dumps(record,ensure_ascii=False))
+            store.event(run_id,None,'result','场景能力管线已生成湖区候选，尚未写回球系统',{'scene_id':scene_id,'terrain_version':state['version']})
+            return {'scene':scene,'candidate_id':scene_id,'placed_count':len(scene['buildings']),'requested_count':plan['count'],'status':'candidate'}
+
+        scenes_file=directory/'lake-scenes.json';scenes=json.loads(scenes_file.read_text()) if scenes_file.exists() else []
+        # Replace this lake's previous scene; other lakes remain untouched.
+        scenes=[s for s in scenes if not(s.get('terrainVersion')==state['version'] and s.get('lakeIndex')==lake)]+[scene]
+        tmp=directory/'lake-scenes.tmp';tmp.write_text(json.dumps(scenes,ensure_ascii=False));tmp.replace(scenes_file)
+        store.event(run_id,None,'result','湖区场景已建造并绑定球面',{'scene_id':scene_id,'lake_index':lake,'buildings':len(scene['buildings']),'terrain_version':state['version'],'plan':plan,'checks':scene['checks']})
+        return {'scene':scene,'placed_count':len(scene['buildings']),'requested_count':plan['count']}
+
+@app.post('/api/reacode/planet-lake-candidate/{run_id}/{candidate_id}')
+async def rea_planet_lake_candidate(run_id: str, candidate_id: str, body: dict):
+    import hashlib
+    if not candidate_id.startswith('lake-town-') or not candidate_id[10:].isalnum():raise HTTPException(400,'无效候选ID')
+    async with _planet_edit_locks.setdefault(run_id,asyncio.Lock()):
+        run=store.get_run(run_id)
+        if not run or run['mode']!='rea_planet':raise HTTPException(404)
+        if run['status'] in ('running','pending'):raise HTTPException(409,'星球任务仍在运行')
+        state=_read_state(run_id).get('rea_planet',{});directory=RUNS/run_id
+        path=directory/(candidate_id+'.candidate.json')
+        if not path.exists():raise HTTPException(404,'候选不存在')
+        record=json.loads(path.read_text());scene=record['scene'];action=body.get('action')
+        if state.get('version')!=scene['terrainVersion'] or body.get('terrain_version')!=state.get('version'):raise HTTPException(409,'地形版本已变化，禁止写回旧候选')
+        current=directory/'lake-scenes.json';raw=current.read_bytes() if current.exists() else b'[]'
+        digest=hashlib.sha256(raw).hexdigest()
+        if action=='adopt':
+            if record['status']!='candidate' or digest!=record['before_hash']:raise HTTPException(409,'当前场景已变化，请重新生成候选')
+            scenes=[s for s in json.loads(raw) if not(s.get('terrainVersion')==scene['terrainVersion'] and s.get('lakeIndex')==scene['lakeIndex'])]+[scene]
+            tmp=directory/'lake-scenes.tmp';tmp.write_text(json.dumps(scenes,ensure_ascii=False));tmp.replace(current)
+            record.update(status='adopted',after_hash=hashlib.sha256(current.read_bytes()).hexdigest())
+        elif action=='discard':
+            if record['status']!='candidate':raise HTTPException(409,'候选已被处理')
+            record['status']='discarded'
+        elif action=='undo':
+            if record['status']!='adopted' or digest!=record.get('after_hash'):raise HTTPException(409,'后续场景已变化，无法撤销覆盖')
+            tmp=directory/'lake-scenes.tmp';tmp.write_text(json.dumps(record['before'],ensure_ascii=False));tmp.replace(current);record['status']='undone'
+        else:raise HTTPException(400,'无效操作')
+        path.write_text(json.dumps(record,ensure_ascii=False))
+        child=record.get('scene_run')
+        if child:
+            child_state=_read_state(child);child_state.setdefault('bound_scene',{})['writeback']=record['status']
+            child_file=RUNS/child/'state.json';tmp_child=child_file.with_suffix('.writeback.tmp');tmp_child.write_text(json.dumps(child_state,ensure_ascii=False));tmp_child.replace(child_file)
+            store.event(child,None,'result','场景管线产物写回状态：'+record['status'],{'parent_planet':run_id,'candidate_id':candidate_id})
+        store.event(run_id,None,'result','湖区场景候选：'+action,{'candidate_id':candidate_id,'terrain_version':state['version']})
+        return {'status':record['status'],'scene_id':candidate_id,'terrain_version':state['version']}
+
+@app.post('/api/reacode/planet-lake-edit/{run_id}/{scene_id}')
+async def rea_planet_lake_edit(run_id: str, scene_id: str, body: dict):
+    import uuid
+    from ..capabilities.bridge import node_path
+    if not scene_id.startswith('lake-town-') or not scene_id[10:].isalnum():raise HTTPException(400,'无效场景ID')
+    async with _planet_edit_locks.setdefault(run_id,asyncio.Lock()):
+        run=store.get_run(run_id)
+        if not run or run['mode']!='rea_planet':raise HTTPException(404)
+        if run['status'] in ('running','pending'):raise HTTPException(409,'星球任务仍在运行')
+        state=_read_state(run_id).get('rea_planet',{});directory=RUNS/run_id
+        if body.get('terrain_version')!=state.get('version'):raise HTTPException(409,'地形版本已变化，请重新进入湖区')
+        file=directory/'lake-scenes.json';scenes=json.loads(file.read_text()) if file.exists() else []
+        current=next((s for s in scenes if s.get('id')==scene_id and s.get('terrainVersion')==state['version']),None)
+        if current is None:raise HTTPException(404,'未找到当前地形版本的湖区场景；请先生成并采用一个候选')
+        if body.get('scene_revision')!=_lake_scene_revision(current):raise HTTPException(409,'建筑已被另一个页面修改，请刷新后重试')
+        history=directory/'lake-building-history'/scene_id;history.mkdir(parents=True,exist_ok=True)
+        action=body.get('action');undo_file=None
+        if action=='undo':
+            backups=sorted(history.glob('*.json'))
+            if not backups:raise HTTPException(409,'没有可撤销的建筑编辑')
+            undo_file=backups[-1];updated=json.loads(undo_file.read_text())
+            if updated.get('terrainVersion')!=state['version']:raise HTTPException(409,'历史建筑来自旧地形，禁止恢复')
+        else:
+            placements=[{'id':b['id'],'x':b['localPosition'][0],'z':b['localPosition'][2],'floors':b['floors'],'color':b.get('color',i%5)} for i,b in enumerate(current['buildings'])]
+            building_id=body.get('building_id');target=next((b for b in placements if b['id']==building_id),None)
+            if action=='add':
+                placements.append({'id':scene_id+'-b'+uuid.uuid4().hex[:10],'x':body.get('x'),'z':body.get('z'),'floors':body.get('floors',2),'color':body.get('color',0)})
+            elif action in ('update','delete'):
+                if target is None:raise HTTPException(404,'请先选择一栋当前湖区的建筑')
+                if action=='delete':placements.remove(target)
+                else:
+                    for name in ('x','z','floors','color'):
+                        if name in body:target[name]=body[name]
+            else:raise HTTPException(400,'无效建筑编辑操作')
+            out=directory/('lake-edit-'+uuid.uuid4().hex+'.tmp')
+            opts={'lakeIndex':current['lakeIndex'],'count':max(1,min(32,len(placements))),'floors':2,'terrainVersion':state['version'],'sceneId':scene_id,'placements':placements}
+            proc=await asyncio.create_subprocess_exec(node_path(),str(config.ROOT/'src/genai_pipeline/reacode/lake-town.mjs'),stdin=asyncio.subprocess.PIPE,stdout=asyncio.subprocess.PIPE,stderr=asyncio.subprocess.PIPE)
+            try:_,error=await asyncio.wait_for(proc.communicate(json.dumps({'input':str(directory/'planet.json'),'out':str(out),'options':opts}).encode()),90)
+            except asyncio.TimeoutError:
+                proc.kill();await proc.wait();out.unlink(missing_ok=True);raise HTTPException(408,'建筑编辑计算超时')
+            if proc.returncode:
+                out.unlink(missing_ok=True);raise HTTPException(400,_node_failure(error.decode()))
+            updated=json.loads(out.read_text());out.unlink();updated['plan']=current.get('plan',{});updated['edited_by']='manual-building-editor'
+            (history/f'{time.time_ns()}.json').write_text(json.dumps(current,ensure_ascii=False))
+        scenes=[updated if s.get('id')==scene_id else s for s in scenes]
+        tmp=directory/'lake-scenes.tmp';tmp.write_text(json.dumps(scenes,ensure_ascii=False));tmp.replace(file)
+        if undo_file:undo_file.unlink()
+        updated['sceneRevision']=_lake_scene_revision(updated)
+        store.event(run_id,None,'result','湖区建筑编辑：'+str(action),{'scene_id':scene_id,'building_id':body.get('building_id'),'buildings':len(updated['buildings']),'terrain_version':state['version']})
+        return {'scene':updated,'scene_revision':updated['sceneRevision'],'status':'saved'}
+
+@app.post('/api/reacode/planet-scene-runs/{planet_run}')
+async def create_planet_scene_run(planet_run: str, body: dict):
+    parent=store.get_run(planet_run)
+    if not parent or parent['mode']!='rea_planet':raise HTTPException(404)
+    if parent['status'] in ('running','pending'):raise HTTPException(409,'球管线尚未完成，不能进入场景管线')
+    state=_read_state(planet_run).get('rea_planet',{});directory=RUNS/planet_run
+    if state.get('version')!=body.get('terrain_version'):raise HTTPException(409,'球地形版本已变化，请重新选区')
+    planet=json.loads((directory/'planet.json').read_text());lake=body.get('lake_index')
+    if type(lake) is not int or lake<0 or lake>=len(planet.get('inlandWater',[])) or planet['inlandWater'][lake].get('frame',{}).get('kind')!='local-tangent-plane':raise HTTPException(400,'请从球管线选择有效平面湖区')
+    steps=body.get('steps')
+    if not isinstance(steps,list) or len(steps)!=1 or steps[0].get('id')!='planet.lake-town':raise HTTPException(400,'当前湖区只支持已适配的planet.lake-town能力')
+    params=steps[0].get('params',{})
+    if type(params.get('count',8)) is not int or not 1<=params.get('count',8)<=32 or type(params.get('floors',2)) is not int or not 1<=params.get('floors',2)<=5:raise HTTPException(400,'建筑数量或层数越界')
+    binding={'planet_run':planet_run,'terrain_version':state['version'],'lake_index':lake}
+    rid=orch.submit('湖泊'+str(lake+1)+' · 来源球 '+planet_run,str(body.get('brief') or '在来源球的湖区构建场景'),'rea_bound_scene',{'planet_binding':binding,'steps':steps,'model':'main','approval_gates':[]},start=False)
+    store.event(planet_run,None,'result','球管线已将区域交给独立场景管线',{'scene_run':rid,'binding':binding})
+    orch.enqueue(rid)
+    return {'id':rid,'parent_planet':planet_run,'binding':binding}
+
+@app.get('/api/reacode/bound-scene-runs/{run_id}')
+def bound_scene_run(run_id: str):
+    run=store.get_run(run_id)
+    if not run or run['mode']!='rea_bound_scene':raise HTTPException(404)
+    state=_read_state(run_id).get('bound_scene',{})
+    return {'run':run,'stages':store.stages(run_id),'state':state,'artifacts':store.artifacts(run_id)}

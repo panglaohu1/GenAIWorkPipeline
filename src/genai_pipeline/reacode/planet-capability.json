@@ -1,0 +1,10 @@
+{
+  "id": "planet.global-terrain",
+  "owner": "oskar",
+  "role": "重构学习方法为可执行、可验证的全球地形能力",
+  "source": "engines/planet-import.json",
+  "inputs": ["seed", "radius", "seaLevel"],
+  "implementation": ["engines/procgen/planet/planetCompilerV8.js", "src/genai_pipeline/reacode/planet-build.mjs"],
+  "checks": ["compiler validators", "closed sampled sphere", "Euler characteristic 2", "finite coordinates", "browser rotation", "region selection"],
+  "gaps": ["subdivision=2 bookshop-route-too-steep", "scene-specific inherited anchors", "player globe traversal not verified", "regional scene construction not yet integrated"]
+}
