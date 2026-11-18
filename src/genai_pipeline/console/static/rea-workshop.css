@@ -14,3 +14,7 @@ body.lake-workshop-active .library,body.lake-workshop-active .inspector,body.lak
 body.lake-workshop-active .studio{grid-template-columns:1fr;min-height:calc(100vh - 70px)}
 body.lake-workshop-active .workspace{padding:12px}
 body.lake-workshop-active .viewport-panel{margin-bottom:0}
+body.lake-workshop-active .activity-panel{display:none!important}
+body.lake-workshop-active .viewport-panel{border-radius:10px}
+body.lake-workshop-active .viewport{height:calc(100vh - 108px);min-height:560px}
+@media(max-width:900px){body.lake-workshop-active .viewport{height:calc(100vh - 90px);min-height:420px}}

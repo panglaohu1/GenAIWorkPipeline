@@ -223,33 +223,41 @@ function toOperation(value){
 // 建造不再走页内的自造层：直接打开 REACodeRefactoring 的 world 建造工坊，
 // 同一个网格、同一条建筑管线（墙体 / 屋顶 / 门窗 / 支撑 / 撤销 / 存档）。
 // 这里只负责把星球与湖区上下文交给它，返回时刷新球面。
-function workshopUrl(lakeIndex,planetId){return '/engines/REACodeRefactoring/index.html?'+new URLSearchParams({run:planetId,lake:String(lakeIndex),scene:'lake',grid:'lake',gameui:'1'})}
 function openLakeWorkshop(){
- if(candidate)return notice('先采用或放弃当前候选，再进入建造工坊');
+ if(candidate)return notice('先采用或放弃当前候选，再进入建造');
  if(!data)return notice('星球与湖区数据还没读取完成，稍等一下');
+ const town=((data?.planet?.sceneInstances)||[]).find(s=>s.kind==='lake-world'&&s.lakeIndex===lake);
+ if(!town)return notice('这个湖还没有可建造场景，请先生成并采用候选');
  buildingEditing=true;
  $('#viewerOverlay').hidden=true;
  document.body.classList.add('lake-workshop-active');
- $('.viewport-panel').classList.add('lake-workshop-mode');
  document.querySelector('.viewport-panel').scrollIntoView({block:'start'});
- text('#viewerTitle','REA 建造工坊 · 湖泊 '+(lake+1));
- text('#viewMode','Townscaper 建造 · 就在湖上盖');
- $('#edit').textContent='返回球面';
- frame.onload=null;
- frame.src=workshopUrl(lake,planet);
- notice('已打开 REA 建造工坊（与引擎 world 同一套代码）：左键拖动长楼、点楼顶叠层、右键拖动削层、Alt 涂色、Ctrl/⌘+S 保存回这个湖。');
+ text('#viewerTitle','球面建造 · 湖泊 '+(lake+1));
+ text('#viewMode','球面建造 · 直接在湖上盖');
+ $('#edit').textContent='退出建造';
+ $('#play').textContent='全屏建造';
+ const send=()=>{try{frame.contentWindow?.postMessage({type:'genai-lake-build',on:true,sceneId:town.id,lakeIndex:lake},location.origin)}catch{/* 等 iframe 就绪 */}};
+ send();
+ const start=Date.now();
+ const retry=()=>{
+  if(!buildingEditing)return;
+  if(frame.contentWindow?.planetLakeEditor?.active)return;
+  send();
+  if(Date.now()-start<20000)setTimeout(retry,250);
+ };
+ setTimeout(retry,250);
+ notice('球与场景是一体的：直接在球面上点湖面放一块、点楼顶叠层，按住左键拖动连续建造；Shift/右键点削层，Alt 涂色，右键拖动转视角。改动自动存回这个湖。');
 }
-async function closeLakeWorkshop(){
+function closeLakeWorkshop(){
  buildingEditing=false;
  document.body.classList.remove('lake-workshop-active');
- $('.viewport-panel').classList.remove('lake-workshop-mode');
- $('#edit').textContent='进入建造工坊';
+ try{frame.contentWindow?.planetLakeEditor?.exit?.()}catch{/* 忽略 */}
+ $('#edit').textContent='进入建造';
+ $('#play').textContent='全屏查看';
  text('#viewMode','原星球湖区');
- try{await refresh()}catch(error){notice(error.message)}
- if(!candidate)preview();
- notice('已返回球面视图；工坊里保存过的楼会出现在这个湖上。');
+ notice('已退出建造；改动已自动保存到这个湖。');
 }
-$('#edit').textContent='进入建造工坊';
+$('#edit').textContent='进入建造';
 $('#edit').onclick=()=>buildingEditing?closeLakeWorkshop():openLakeWorkshop();
 sceneChannel.addEventListener('message',async event=>{
  if(event.data?.planet!==planet||busy||candidate||buildingEditing)return;
@@ -263,8 +271,8 @@ sceneChannel.addEventListener('message',async event=>{
 });
 // 工坊里自动保存成功后由 iframe 通知：说明这块湖已经变了，返回球面即可看到
 window.addEventListener('message',event=>{
- if(event.origin!==location.origin||!buildingEditing)return;
- if(event.data?.type==='genai-lake-saved')notice('工坊已自动保存 '+event.data.buildings+' 栋到湖泊 '+(lake+1)+'；点“返回球面”即可看到。');
+ if(event.origin!==location.origin)return;
+ if(event.data?.type==='genai-lake-saved')notice('已自动保存 '+event.data.buildings+' 栋到湖泊 '+(lake+1)+'。');
 });
 // Login stays in this page so authentication cannot lose the selected planet/lake.
 const accountButton=document.createElement('button');accountButton.className='secondary';accountButton.id='boundAccount';accountButton.textContent='登录本机账户';$('.top').append(accountButton);
