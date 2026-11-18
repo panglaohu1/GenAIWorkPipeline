@@ -261,6 +261,11 @@ sceneChannel.addEventListener('message',async event=>{
   notice(error.message);
  }
 });
+// 工坊里自动保存成功后由 iframe 通知：说明这块湖已经变了，返回球面即可看到
+window.addEventListener('message',event=>{
+ if(event.origin!==location.origin||!buildingEditing)return;
+ if(event.data?.type==='genai-lake-saved')notice('工坊已自动保存 '+event.data.buildings+' 栋到湖泊 '+(lake+1)+'；点“返回球面”即可看到。');
+});
 // Login stays in this page so authentication cannot lose the selected planet/lake.
 const accountButton=document.createElement('button');accountButton.className='secondary';accountButton.id='boundAccount';accountButton.textContent='登录本机账户';$('.top').append(accountButton);
 const loginDialog=document.createElement('dialog');loginDialog.style.cssText='border:1px solid #cfe3ea;border-radius:12px;padding:24px;max-width:380px';loginDialog.innerHTML='<form id="boundLoginForm"><h2>登录本机账户</h2><p>登录后留在当前星球湖区，不切换示例场景。</p><label>用户名<input name="username" autocomplete="username" required></label><label>密码<input name="password" type="password" autocomplete="current-password" required></label><p id="boundLoginError" role="alert"></p><button type="submit" class="primary">登录并继续</button> <button type="button" id="cancelBoundLogin">取消</button><p><a href="/" target="_blank" rel="noopener">没有账户？在新窗口注册</a></p></form>';document.body.append(loginDialog);
