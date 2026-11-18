@@ -10,6 +10,7 @@
  */
 
 import { placeHouseTiles } from '../build/multicell.js';
+import { paintLakeIntoWorld } from '../../../system-workshop/planet/lake-scene.js';
 import { generateTerrain } from '../terrain/generate.js';
 import { forceChurch } from '../terrain/features.js';
 import { generateBadNorth } from '../badnorth/island.js';
@@ -21,6 +22,7 @@ export const SCENES = {
   terrain: { name: '地形', note: 'engine：地形管线' },
   fusion: { name: '融合', note: '地形 + 建筑，同一张网格' },
   badnorth: { name: '北境', note: 'Bad North：守岛打维京人' },
+  lake: { name: '湖区', note: 'Townscaper：就在湖上盖' },
 };
 
 const SCHEMES = [[0, 1, 3, 2, 7], [0, 7, 9, 1], [3, 13, 7, 1], [2, 12, 7, 11], [4, 14, 5, 7], [0, 3, 1, 2, 5, 13]];
@@ -29,12 +31,26 @@ export function buildScene(world, name, seed = 7) {
   if (name === 'town') return generateTown(world, seed, 0);
   if (name === 'terrain') return generateTerrain(world, { seed });
   if (name === 'badnorth') return generateBadNorth(world, seed);
+  if (name === 'lake') return paintLakeScene(world);
   // 管线示例用：融合场景那座岛的"只有地形"版本（同一个种子、同一组参数），房子之后再拼进来
   if (name === 'fusion-terrain') return generateTerrain(world, FUSION_TERRAIN(seed));
   return generateFusion(world, seed);
 }
 
 const FUSION_TERRAIN = (seed) => ({ seed, rivers: 1, caves: 1, towers: 2 });
+
+/**
+ * 湖区场景：水面留空（ground = 0），湖岸抬成岩石台阶。
+ * 湖面数据由 app.js 从球系统的 planet-data 取到，挂在 globalThis.__reaLakeScene 上。
+ * 建造、撤销、存档全部复用本引擎自己的管线，不另写房子。
+ */
+export function paintLakeScene(world) {
+  const lake = globalThis.__reaLakeScene;
+  if (!lake?.water) throw new Error(globalThis.__reaLakeError || '湖区缺少湖面数据：请从球系统的湖区入口进入');
+  const stats = paintLakeIntoWorld(world, lake.water, { shoreRings: 3 });
+  world.lakeSceneInfo = { ...stats, lakeIndex: lake.lakeIndex ?? null, terrainVersion: lake.terrainVersion ?? null };
+  return stats;
+}
 
 export function generateFusion(world, seed = 7) {
   generateTerrain(world, FUSION_TERRAIN(seed));

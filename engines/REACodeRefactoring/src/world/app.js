@@ -19,6 +19,7 @@ import { replaySnapshots, replayDelay } from '../core/snapshot-replay.js';
 import { mountEnvironmentPanel } from '../ui/environment-panel.js';
 import { mountWalkthrough } from '../ui/walkthrough.js';
 import { toggleSplice } from '../build/splice.js';
+import { exportLakeState, importLakeState, lakeBuildingStats, lakeCenterLocal } from '../../../system-workshop/planet/lake-scene.js';
 
 // 两种网格（共用全部管线）：
 //   quad   Townscaper：三角点阵 → 合并 → 细分 → 松弛，全是四边形（1147881669350891521）
@@ -26,6 +27,8 @@ import { toggleSplice } from '../build/splice.js';
 const GRIDS = {
   quad: { name: '四边形', note: 'Townscaper', build: () => buildQuadGrid({ radius: 14, hexSize: 1.0 }), radius: 14 },
   mixed: { name: '三角 + 方格', note: '第三个项目', build: () => buildMixedGrid({ radius: 22, hexSize: 0.62 }), radius: 22 },
+  // 湖区：一格 3.6 m，与球系统湖区的台基尺寸同口径；半径 5 → 约 ±30 m，正好盖住一块湖
+  lake: { name: '湖区', note: '3.6 m 一格', build: () => buildQuadGrid({ radius: 5, hexSize: 7.2 }), radius: 5 },
 };
 const LEVEL = 0.5;           // 一层的高度
 
@@ -42,7 +45,35 @@ if (playOnly) {
   const style=document.createElement('style');style.textContent='#hud,[data-coverage-progress],#coverage-progress{display:none!important}body>div[style*="bottom:8px"]{display:none!important}';document.head.append(style);
 }
 if (['hex', 'square', 'tri'].includes(params0.get('grid'))) Object.assign(GRIDS, (await import('../core/grid-kinds-c08.js')).PURE_GRIDS);   // r56 C08: pure grid kinds (1670790425232175108), default off
-let gridKind = GRIDS[params0.get('grid')] ? params0.get('grid') : 'quad';
+
+/* ---- 湖区：球系统带 ?run=<planet>&lake=<n> 进来 -------------------------------
+ * 先把这块湖的水面轮廓取下来，网格换成 3.6 m 的湖区网格，场景固定为 lake。
+ * 之后点水面长楼、叠层、削层、撤销、存档，全部走本引擎既有的管线。 */
+const lakeRun = params0.get('run'), lakeParam = params0.get('lake');
+let lakeScene = null;
+if (lakeRun && lakeParam !== null) {
+  try {
+    const response = await fetch(`/api/reacode/planet-data/${encodeURIComponent(lakeRun)}`);
+    if (!response.ok) throw new Error(`湖面数据读取失败（${response.status}）`);
+    const payload = await response.json();
+    const index = Number(lakeParam);
+    const water = payload.planet?.inlandWater?.[index];
+    if (!water || water.kind !== 'lake') throw new Error('这个编号不是已经生成水面的湖泊');
+    const saved = (payload.planet?.sceneInstances || []).find((s) => s.lakeIndex === index && s.kind === 'lake-world');
+    lakeScene = {
+      run: lakeRun, lakeIndex: index, water,
+      terrainVersion: payload.state?.version ?? null,
+      sceneId: saved?.id ?? `lake-town-${index}`,
+      savedState: saved?.worldState ?? null,
+    };
+    globalThis.__reaLakeScene = lakeScene;
+  } catch (err) {
+    globalThis.__reaLakeError = err.message;
+    console.warn('湖区数据读取失败：', err.message);
+  }
+}
+
+let gridKind = GRIDS[params0.get('grid')] ? params0.get('grid') : (lakeScene ? 'lake' : 'quad');
 // 分享链接里没写 ?grid= 时，按存档头里的网格半径判断
 if (!params0.get('grid') && location.hash.length > 1) {
   try {
@@ -130,11 +161,25 @@ function loadScene(name, record) {
   scene = name;
   buildScene(world, name, seed);
   view.changed();
-  view.frameTown();
+  frameForScene();
   buildSceneBar();
   setTimeout(syncBadNorth, 0);   // 在学习面板按场景重置图层之后再套北境
   scheduleHash();
   window.dispatchEvent(new CustomEvent('scenechange', { detail: name }));
+  syncLakeUI();
+}
+
+/** 湖区按水面取景：按实心格取景会框到外圈岸线，相机被推得太远，看不清楼。 */
+function frameForScene() {
+  if (scene === 'lake' && lakeScene?.water) {
+    const c = lakeCenterLocal(lakeScene.water);
+    view.target.set(c.x, 0.9, c.z);
+    view.distance = Math.max(26, Math.max(c.width, c.depth) * 1.15);
+    view.pitch = 0.92;
+    view.updateCamera();
+    return;
+  }
+  view.frameTown();
 }
 
 /* ---- 撤销 ---------------------------------------------------------------- */
@@ -319,12 +364,14 @@ addEventListener('keydown', (e) => {
   else if (k === 'g') loadScene('terrain', true);
   else if (k === 'f') loadScene('fusion', true);
   else if (k === 'h' || k === '?') helpEl.classList.toggle('hidden');
+  else if (k === 's' && (e.ctrlKey || e.metaKey) && scene === 'lake') { e.preventDefault(); saveLakeWorld(); }
 });
 
 /* ---- 地址栏存档 ------------------------------------------------------------ */
 function scheduleHash() {
   clearTimeout(scheduleHash.t);
   scheduleHash.t = setTimeout(() => {
+    if (scene === 'lake') return;   // 湖区存档走服务端（保存按钮 / Ctrl+S），不写地址栏
     try { history.replaceState(null, '', location.pathname + location.search + '#' + encodeWorld(world, scene)); } catch { /* 忽略 */ }
   }, 350);
 }
@@ -356,19 +403,60 @@ let restored = false;
 if (location.hash.length > 1) {
   try { scene = decodeWorld(decodeURIComponent(location.hash.slice(1)), world); restored = true; } catch (err) { console.warn('存档读取失败：', err.message); }
 }
-if (!restored) { scene = SCENES[params.get('scene')] ? params.get('scene') : 'town'; buildScene(world, scene, seed); }
+if (!restored) {
+  scene = SCENES[params.get('scene')] ? params.get('scene') : (lakeScene ? 'lake' : 'town');
+  buildScene(world, scene, seed);
+  // 湖区：把上次保存的体素盖回来（岸线由场景重建，体素以存档为准）
+  if (lakeScene?.savedState) {
+    try { importLakeState(world, lakeScene.savedState); } catch (err) { toast('湖区存档读取失败：' + err.message); }
+  }
+}
 view.changed();
-view.frameTown();
+frameForScene();
 if (playOnly) { view.distance *= 1.18; view.updateCamera(); }
 buildPalette();
 setTimeout(syncBadNorth, 50);
 buildSceneBar();
 setTool(params.get('tool') === 'splice' ? 'splice' : 'build');
 refreshUndo();
+syncLakeUI();
 
 document.getElementById('undo').onclick = undo;
 document.getElementById('redo').onclick = redo;
 document.getElementById('replay').onclick = replay;
+
+/* ---- 湖区：保存回球系统 --------------------------------------------------
+ * 存的是体素场本身（solid / rock / color），服务端用同一套建筑管线烘出球面上的网格，
+ * 所以球上看到的楼和这里盖的完全一致。 */
+const saveLakeBtn = document.getElementById('savelake');
+function syncLakeUI() {
+  const btn = document.getElementById('savelake');
+  if (btn) btn.hidden = scene !== 'lake' || !lakeScene;
+}
+async function saveLakeWorld() {
+  if (!lakeScene || !saveLakeBtn || saveLakeBtn.disabled) return;
+  const label = saveLakeBtn.textContent;
+  saveLakeBtn.disabled = true; saveLakeBtn.textContent = '保存中';
+  try {
+    const state = exportLakeState(world, { lakeIndex: lakeScene.lakeIndex, terrainVersion: lakeScene.terrainVersion });
+    const stats = lakeBuildingStats(world);
+    const response = await fetch(`/api/reacode/planet-lake-world/${encodeURIComponent(lakeScene.run)}/${lakeScene.lakeIndex}`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ state, stats, sceneId: lakeScene.sceneId }),
+    });
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(result.detail || `保存失败（${response.status}）`);
+    lakeScene.sceneId = result.scene?.id || lakeScene.sceneId;
+    lakeScene.savedState = state;
+    toast(`已保存 · ${stats.buildings} 栋 / ${stats.blocks} 块`);
+  } catch (err) {
+    toast('保存失败：' + err.message);
+  } finally {
+    saveLakeBtn.disabled = false; saveLakeBtn.textContent = label || '保存';
+  }
+}
+if (saveLakeBtn) saveLakeBtn.onclick = saveLakeWorld;
 document.getElementById('exportobj').onclick = async () => { const { downloadOBJ } = await import('../tools/objexport.js'); downloadOBJ(view.worldMesh.geometry, `town-${Date.now() % 1e6}.obj`); };
 document.getElementById('demo').onclick = () => { if (replaying) return; seed = (Math.random() * 1e6) | 0; loadScene(scene, true); toast(`新的${SCENES[scene].name}`); };
 document.getElementById('clear').onclick = () => { if (replaying) return; pushUndo(world.snapshot()); world.reset(); view.changed(); scheduleHash(); toast('已清空'); };

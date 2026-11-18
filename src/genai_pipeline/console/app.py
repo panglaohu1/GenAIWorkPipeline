@@ -820,6 +820,8 @@ def rea_decide(cid: str, body: dict):
         raise HTTPException(409, str(exc))
 
 app.mount("/engines/REACodeRefactoring", StaticFiles(directory=config.ROOT / "engines/REACodeRefactoring"), name="reacode")
+# 湖区适配层（lake-scene.js）与 REA 建筑管线同源加载，浏览器里 import 的相对路径必须能落到这里。
+app.mount("/engines/system-workshop", StaticFiles(directory=config.ROOT / "engines/system-workshop"), name="system-workshop")
 
 
 @app.get("/api/reacode/demo")
@@ -866,7 +868,9 @@ def _node_failure(text: str) -> str:
 
 def _lake_scene_revision(scene):
     import hashlib
-    return hashlib.sha256(json.dumps({k:v for k,v in scene.items() if k!='sceneRevision'},sort_keys=True,separators=(',',':')).encode()).hexdigest()
+    # lake-world 的网格有几十万字符，逐次哈希太贵；体素本身已经代表了内容。
+    skip = {'sceneRevision', 'mesh', 'worldState'} if scene.get('kind') == 'lake-world' else {'sceneRevision'}
+    return hashlib.sha256(json.dumps({k:v for k,v in scene.items() if k not in skip},sort_keys=True,separators=(',',':')).encode()).hexdigest()
 
 @app.get("/api/reacode/planet-data/{run_id}")
 def rea_planet_data(run_id: str, candidate: str | None = None):
@@ -1083,6 +1087,48 @@ async def rea_planet_lake_edit(run_id: str, scene_id: str, body: dict):
         updated['sceneRevision']=_lake_scene_revision(updated)
         store.event(run_id,None,'result','湖区建筑编辑：'+str(action),{'scene_id':scene_id,'building_id':body.get('building_id'),'buildings':len(updated['buildings']),'terrain_version':state['version']})
         return {'scene':updated,'scene_revision':updated['sceneRevision'],'status':'saved'}
+
+@app.post('/api/reacode/planet-lake-world/{run_id}/{lake_index}')
+async def rea_planet_lake_world(run_id: str, lake_index: int, body: dict):
+    """湖区建造工坊保存：接收编辑器里的整份体素场，用 REA 建筑管线烘成球面网格。
+
+    与 planet-lake-edit（按栋增删）不是一条路：这里存的是 World 的 solid/rock/color，
+    所以叠层、削层、拱、悬空都由建筑管线自己决定，不再有第二套房子生成器。
+    """
+    import uuid
+    from ..capabilities.bridge import node_path
+    async with _planet_edit_locks.setdefault(run_id, asyncio.Lock()):
+        run = store.get_run(run_id)
+        if not run or run['mode'] != 'rea_planet': raise HTTPException(404)
+        if run['status'] in ('running', 'pending'): raise HTTPException(409, '星球任务仍在运行')
+        state = _read_state(run_id).get('rea_planet', {})
+        directory = RUNS / run_id
+        lake_state = body.get('state')
+        if not isinstance(lake_state, dict) or lake_state.get('v') != 1: raise HTTPException(400, '无效的湖区体素存档')
+        cells = lake_state.get('cells')
+        arrays = [lake_state.get(k) for k in ('solid', 'rock', 'color')]
+        if type(cells) is not int or not 1 <= cells <= 4096 or any(not isinstance(a, list) or len(a) != cells for a in arrays): raise HTTPException(400, '湖区体素存档长度不一致')
+        if lake_state.get('terrainVersion') != state.get('version'): raise HTTPException(409, '地形版本已变化，请重新进入湖区')
+        scene_id = str(body.get('sceneId') or ('lake-town-' + uuid.uuid4().hex[:12]))
+        if not scene_id.startswith('lake-town-') or not scene_id[10:].isalnum(): raise HTTPException(400, '无效场景ID')
+        out = directory / ('lake-world-' + uuid.uuid4().hex + '.tmp')
+        options = {'lakeIndex': lake_index, 'terrainVersion': state['version'], 'sceneId': scene_id, 'state': lake_state}
+        proc = await asyncio.create_subprocess_exec(node_path(), str(config.ROOT / 'src/genai_pipeline/reacode/lake-world.mjs'), stdin=asyncio.subprocess.PIPE, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
+        try:
+            _, error = await asyncio.wait_for(proc.communicate(json.dumps({'input': str(directory / 'planet.json'), 'out': str(out), 'options': options}).encode()), 120)
+        except asyncio.TimeoutError:
+            proc.kill(); await proc.wait(); out.unlink(missing_ok=True); raise HTTPException(408, '湖区网格烘焙超时')
+        if proc.returncode:
+            out.unlink(missing_ok=True); raise HTTPException(400, _node_failure(error.decode()))
+        scene = json.loads(out.read_text()); out.unlink()
+        file = directory / 'lake-scenes.json'
+        scenes = json.loads(file.read_text()) if file.exists() else []
+        # 同一个湖只保留一份：旧的按栋场景（lake-town）与旧体素场景都让位给这次保存。
+        scenes = [s for s in scenes if not (s.get('terrainVersion') == state['version'] and s.get('lakeIndex') == lake_index)] + [scene]
+        tmp = directory / 'lake-scenes.tmp'; tmp.write_text(json.dumps(scenes, ensure_ascii=False)); tmp.replace(file)
+        scene['sceneRevision'] = _lake_scene_revision(scene)
+        store.event(run_id, None, 'result', '湖区建造工坊保存', {'scene_id': scene_id, 'lake_index': lake_index, 'buildings': scene['checks']['buildings'], 'blocks': scene['checks']['blocks'], 'terrain_version': state['version']})
+        return {'scene': scene, 'scene_revision': scene['sceneRevision'], 'status': 'saved'}
 
 @app.post('/api/reacode/planet-scene-runs/{planet_run}')
 async def create_planet_scene_run(planet_run: str, body: dict):

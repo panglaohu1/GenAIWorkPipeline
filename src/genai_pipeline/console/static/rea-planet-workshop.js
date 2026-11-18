@@ -220,40 +220,37 @@ function toOperation(value){
   action:'add',x:value.x,z:value.z,floors:value.floors,color:value.color
  };
 }
-$('#edit').textContent='进入建筑编辑';
-$('#edit').onclick=()=>{
- if(candidate)return notice('先采用或放弃当前候选，再编辑建筑');
- if(!activeTown())return notice('当前湖区尚无已采用的场景，请先生成并采用候选');
- buildingEditing=!buildingEditing;
- editor.hidden=!buildingEditing;
- $('#edit').textContent=buildingEditing?'退出建筑编辑':'进入建筑编辑';
- if(buildingEditing){
-  bindEditor();
-  text('#viewMode','建筑编辑 · 点水面建造');
-  notice('Townscaper 式建造：左键点水面放一块，点楼顶叠层，点墙面往该侧延伸，右键或 Shift 点击削层，Alt 点击涂色。每一步都写回原星球。');
- }else{
-  frame.contentWindow?.planetLakeEditor?.disable?.();
-  text('#viewMode','原星球湖区');
- }
- syncEditorState();
-};
-window.addEventListener('message',event=>{
- const value=event.data;
- if(event.origin!==location.origin||event.source!==frame.contentWindow)return;
- if(value?.type==='genai-lake-notice')return notice(String(value.text||''));
- if(value?.type!=='genai-lake-edit-intent'||!buildingEditing)return;
- if(value.planet!==planet)return notice('这次点击来自其他星球场景，已忽略。');
- if(value.terrainVersion!==version)return notice('地形版本已变化，请重新从球系统进入后再编辑。');
- const town=activeTown();
- if(!town||value.sceneId!==town.id)return notice('场景与当前湖区不一致，请退出后重新进入建筑编辑。');
- if(typeof value.building_id==='string'&&value.building_id.indexOf('pending:')===0)return notice('上一块还在保存，稍等一下再点这一栋。');
- if(buildQueue.length>8)return notice('建造速度超过保存速度，正在排队，请稍候。');
- buildQueue.push(toOperation(value));
- pumpBuilds();
-});
-frame.addEventListener('load',()=>{
- if(buildingEditing)bindEditor();
-});
+// 建造不再走页内的自造层：直接打开 REACodeRefactoring 的 world 建造工坊，
+// 同一个网格、同一条建筑管线（墙体 / 屋顶 / 门窗 / 支撑 / 撤销 / 存档）。
+// 这里只负责把星球与湖区上下文交给它，返回时刷新球面。
+function workshopUrl(lakeIndex,planetId){return '/engines/REACodeRefactoring/index.html?'+new URLSearchParams({run:planetId,lake:String(lakeIndex),scene:'lake',grid:'lake',gameui:'1'})}
+function openLakeWorkshop(){
+ if(candidate)return notice('先采用或放弃当前候选，再进入建造工坊');
+ if(!data)return notice('星球与湖区数据还没读取完成，稍等一下');
+ buildingEditing=true;
+ $('#viewerOverlay').hidden=true;
+ document.body.classList.add('lake-workshop-active');
+ $('.viewport-panel').classList.add('lake-workshop-mode');
+ document.querySelector('.viewport-panel').scrollIntoView({block:'start'});
+ text('#viewerTitle','REA 建造工坊 · 湖泊 '+(lake+1));
+ text('#viewMode','Townscaper 建造 · 就在湖上盖');
+ $('#edit').textContent='返回球面';
+ frame.onload=null;
+ frame.src=workshopUrl(lake,planet);
+ notice('已打开 REA 建造工坊（与引擎 world 同一套代码）：左键拖动长楼、点楼顶叠层、右键拖动削层、Alt 涂色、Ctrl/⌘+S 保存回这个湖。');
+}
+async function closeLakeWorkshop(){
+ buildingEditing=false;
+ document.body.classList.remove('lake-workshop-active');
+ $('.viewport-panel').classList.remove('lake-workshop-mode');
+ $('#edit').textContent='进入建造工坊';
+ text('#viewMode','原星球湖区');
+ try{await refresh()}catch(error){notice(error.message)}
+ if(!candidate)preview();
+ notice('已返回球面视图；工坊里保存过的楼会出现在这个湖上。');
+}
+$('#edit').textContent='进入建造工坊';
+$('#edit').onclick=()=>buildingEditing?closeLakeWorkshop():openLakeWorkshop();
 sceneChannel.addEventListener('message',async event=>{
  if(event.data?.planet!==planet||busy||candidate||buildingEditing)return;
  try{
