@@ -47,6 +47,7 @@ const FUSION_TERRAIN = (seed) => ({ seed, rivers: 1, caves: 1, towers: 2 });
 export function paintLakeScene(world) {
   const lake = globalThis.__reaLakeScene;
   if (!lake?.water) throw new Error(globalThis.__reaLakeError || '湖区缺少湖面数据：请从球系统的湖区入口进入');
+  world.reset();   // 清空只清楼，岸线要重新铺回来
   const stats = paintLakeIntoWorld(world, lake.water, { shoreRings: 3 });
   world.lakeSceneInfo = { ...stats, lakeIndex: lake.lakeIndex ?? null, terrainVersion: lake.terrainVersion ?? null };
   return stats;

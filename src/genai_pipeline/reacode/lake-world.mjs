@@ -24,7 +24,7 @@ const { World, MAX_LEVEL } = await import('../../../engines/REACodeRefactoring/s
 const { PALETTES } = await import('../../../engines/REACodeRefactoring/src/core/palette.js');
 const { MeshWriter } = await import('../../../engines/REACodeRefactoring/src/core/meshwriter.js');
 const { buildBuildings } = await import('../../../engines/REACodeRefactoring/src/build/buildings.js');
-const { importLakeState, lakeBuildingStats, lakeCenterLocal } = await import('../../../engines/system-workshop/planet/lake-scene.js');
+const { importLakeState, lakeBuildingStats, lakeCenterLocal, LAKE_GRID, LAKE_METRES_PER_UNIT } = await import('../../../engines/system-workshop/planet/lake-scene.js');
 
 const planet = JSON.parse(readFileSync(payload.input, 'utf8'));
 const options = payload.options || {};
@@ -35,7 +35,9 @@ if (!water || water.kind !== 'lake') throw new Error('这个编号不是已经�
 if (water.frame?.kind !== 'local-tangent-plane') throw new Error('湖泊还不是平面湖区，请先在球系统转换');
 
 // 与前端 GRIDS.lake 必须完全同参，否则体素索引对不上。
-const grid = buildQuadGrid({ radius: 5, hexSize: 7.2 });
+// 建筑管线按 0.5 单位一格设计（层高 0.5、窗高 .095 都是绝对数），
+// 所以这里也用 0.5，出网格后整体乘 LAKE_METRES_PER_UNIT 换回 3.6 m 一格的米制。
+const grid = buildQuadGrid({ ...LAKE_GRID });
 const world = new World(grid);
 world.palette = PALETTES.town;
 importLakeState(world, state);
@@ -49,10 +51,15 @@ const result = buildBuildings(writer, world, { L: 0.5 });
 const stats = lakeBuildingStats(world);
 if (!writer.pos.every(Number.isFinite)) throw new Error('湖区网格出现非有限坐标');
 
+// 引擎单位 → 米：球面的 frame（origin / tangentU / tangentV）是米制，不换算会把楼缩成 1/7.2。
+const S = LAKE_METRES_PER_UNIT;
+const positions = new Array(writer.pos.length);
+for (let i = 0; i < positions.length; i++) positions[i] = writer.pos[i] * S;
+
 // 球面上的场景中心（方向向量）：球系统按它做区域归属与相机聚焦。
 const local = lakeCenterLocal(water);
 const f = water.frame;
-const center = [0, 1, 2].map((i) => f.origin[i] + f.tangentU[i] * local.x + f.tangentV[i] * local.z);
+const center = [0, 1, 2].map((i) => f.origin[i] + f.tangentU[i] * local.x * S + f.tangentV[i] * local.z * S);
 const centerLength = Math.hypot(...center) || 1;
 const centerDir = center.map((v) => v / centerLength);
 
@@ -63,8 +70,8 @@ const scene = {
   terrainVersion: options.terrainVersion,
   frame: water.frame,
   center: centerDir,
-  extent: { width: local.width, depth: local.depth },
-  mesh: { positions: writer.pos, colors: writer.col },
+  extent: { width: local.widthMetres, depth: local.depthMetres },
+  mesh: { positions, colors: writer.col },
   buildings: Array.from({ length: stats.buildings }, (_, i) => ({ id: `${options.sceneId}-b${i}` })),
   blocks: stats.blocks,
   floors: stats.floors,

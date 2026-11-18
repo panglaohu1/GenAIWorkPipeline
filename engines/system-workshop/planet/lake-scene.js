@@ -11,7 +11,17 @@
 
 const MAX_SHORE_LEVEL = 3;
 
-/** 把水面三角形投到湖区本地平面（米，frame 的 u/v 轴）。 */
+/* ---- 尺度：REA 建筑管线是按"一格 = 0.5、一层 = 0.5"设计的 ---------------
+ * build/buildings.js 里窗口高 .095、披檐 0.085、屋顶厚度等都是绝对数，只有把
+ * 网格和层高同时保持在 0.5，房子才是它本来的比例（1 格宽 ≈ 1 层高）。
+ * 所以湖区网格用 radius 5 / hexSize 1.0（格距 0.5、318 格），
+ * 落回球面时再整体乘 7.2，换回 3.6 m 一格的米制。 */
+export const LAKE_CELL_METRES = 3.6;            // 湖区一格的真实宽度
+export const LAKE_UNITS_PER_METRE = 0.5 / LAKE_CELL_METRES;   // 1 m = 1/7.2 引擎单位
+export const LAKE_METRES_PER_UNIT = LAKE_CELL_METRES / 0.5;   // 1 引擎单位 = 7.2 m
+export const LAKE_GRID = { radius: 5, hexSize: 1.0 };         // ← 与 3.6 m 一格等比
+
+/** 把水面三角形投到湖区本地平面（存成引擎单位，frame 的 u/v 轴是米）。 */
 export function waterTriangles(water) {
   const frame = water?.frame;
   if (frame?.kind !== 'local-tangent-plane') throw new Error('这是旧版曲面湖泊，请先在球系统把湖转成平面湖区');
@@ -22,8 +32,8 @@ export function waterTriangles(water) {
   const local = new Float64Array(n * 2);
   for (let i = 0; i < n; i++) {
     const dx = p[i * 3] - o[0], dy = p[i * 3 + 1] - o[1], dz = p[i * 3 + 2] - o[2];
-    local[i * 2] = dx * u[0] + dy * u[1] + dz * u[2];
-    local[i * 2 + 1] = dx * v[0] + dy * v[1] + dz * v[2];
+    local[i * 2] = (dx * u[0] + dy * u[1] + dz * u[2]) * LAKE_UNITS_PER_METRE;
+    local[i * 2 + 1] = (dx * v[0] + dy * v[1] + dz * v[2]) * LAKE_UNITS_PER_METRE;
   }
   const idx = water.indices;
   const tris = [];
@@ -88,7 +98,7 @@ export function paintLakeIntoWorld(world, water, { shoreRings = 3 } = {}) {
   return { wet: wet.size, shore: shore.size, cells: cells.length, shoreRings };
 }
 
-/** 湖区本地坐标下的中心（相机取景用）。 */
+/** 湖区本地坐标下的中心与跨度（引擎单位；乘 LAKE_METRES_PER_UNIT 得米）。 */
 export function lakeCenterLocal(water) {
   const { local } = waterTriangles(water);
   let minX = Infinity, maxX = -Infinity, minZ = Infinity, maxZ = -Infinity;
@@ -99,7 +109,12 @@ export function lakeCenterLocal(water) {
     if (z < minZ) minZ = z;
     if (z > maxZ) maxZ = z;
   }
-  return { x: (minX + maxX) / 2, z: (minZ + maxZ) / 2, width: maxX - minX, depth: maxZ - minZ };
+  return {
+    x: (minX + maxX) / 2, z: (minZ + maxZ) / 2,
+    width: maxX - minX, depth: maxZ - minZ,
+    widthMetres: (maxX - minX) * LAKE_METRES_PER_UNIT,
+    depthMetres: (maxZ - minZ) * LAKE_METRES_PER_UNIT,
+  };
 }
 
 /* ------------------------------------------------------------------ */

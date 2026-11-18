@@ -19,7 +19,7 @@ import { replaySnapshots, replayDelay } from '../core/snapshot-replay.js';
 import { mountEnvironmentPanel } from '../ui/environment-panel.js';
 import { mountWalkthrough } from '../ui/walkthrough.js';
 import { toggleSplice } from '../build/splice.js';
-import { exportLakeState, importLakeState, lakeBuildingStats, lakeCenterLocal } from '../../../system-workshop/planet/lake-scene.js';
+import { exportLakeState, importLakeState, lakeBuildingStats, lakeCenterLocal, LAKE_GRID, paintLakeIntoWorld } from '../../../system-workshop/planet/lake-scene.js';
 
 // 两种网格（共用全部管线）：
 //   quad   Townscaper：三角点阵 → 合并 → 细分 → 松弛，全是四边形（1147881669350891521）
@@ -27,8 +27,8 @@ import { exportLakeState, importLakeState, lakeBuildingStats, lakeCenterLocal } 
 const GRIDS = {
   quad: { name: '四边形', note: 'Townscaper', build: () => buildQuadGrid({ radius: 14, hexSize: 1.0 }), radius: 14 },
   mixed: { name: '三角 + 方格', note: '第三个项目', build: () => buildMixedGrid({ radius: 22, hexSize: 0.62 }), radius: 22 },
-  // 湖区：一格 3.6 m，与球系统湖区的台基尺寸同口径；半径 5 → 约 ±30 m，正好盖住一块湖
-  lake: { name: '湖区', note: '3.6 m 一格', build: () => buildQuadGrid({ radius: 5, hexSize: 7.2 }), radius: 5 },
+  // 湖区：与 REA 同尺度（格距 0.5、一层 0.5，比例 1:1），落球面时整体乘 7.2 换成 3.6 m 一格
+  lake: { name: '湖区', note: '3.6 m 一格', build: () => buildQuadGrid({ ...LAKE_GRID }), radius: LAKE_GRID.radius },
 };
 const LEVEL = 0.5;           // 一层的高度
 
@@ -173,8 +173,9 @@ function loadScene(name, record) {
 function frameForScene() {
   if (scene === 'lake' && lakeScene?.water) {
     const c = lakeCenterLocal(lakeScene.water);
-    view.target.set(c.x, 0.9, c.z);
-    view.distance = Math.max(26, Math.max(c.width, c.depth) * 1.15);
+    // 网格是 0.5 单位一格（= 3.6 m），取景距离也要按单位算，否则相机会退到湖外
+    view.target.set(c.x, 0.12, c.z);
+    view.distance = Math.max(3.6, Math.max(c.width, c.depth) * 1.15, 4);
     view.pitch = 0.92;
     view.updateCamera();
     return;
@@ -371,7 +372,7 @@ addEventListener('keydown', (e) => {
 function scheduleHash() {
   clearTimeout(scheduleHash.t);
   scheduleHash.t = setTimeout(() => {
-    if (scene === 'lake') return;   // 湖区存档走服务端（保存按钮 / Ctrl+S），不写地址栏
+    if (scene === 'lake') { scheduleLakeSave(); return; }   // 湖区不写地址栏，改成自动存回球系统
     try { history.replaceState(null, '', location.pathname + location.search + '#' + encodeWorld(world, scene)); } catch { /* 忽略 */ }
   }, 350);
 }
@@ -427,39 +428,84 @@ document.getElementById('replay').onclick = replay;
 
 /* ---- 湖区：保存回球系统 --------------------------------------------------
  * 存的是体素场本身（solid / rock / color），服务端用同一套建筑管线烘出球面上的网格，
- * 所以球上看到的楼和这里盖的完全一致。 */
+ * 所以球上看到的楼和这里盖的完全一致。
+ * 建造是连续的，不能指望用户记得点保存：停手 1.6 s 就自动存一次，
+ * 关页面时用 sendBeacon 再补一发，按钮上直接显示"已存 / 未存"。 */
 const saveLakeBtn = document.getElementById('savelake');
+let lakeSaveTimer = 0, lakeSaving = null, lakeDirty = false, lakeSavedAt = 0;
+
 function syncLakeUI() {
   const btn = document.getElementById('savelake');
   if (btn) btn.hidden = scene !== 'lake' || !lakeScene;
 }
-async function saveLakeWorld() {
-  if (!lakeScene || !saveLakeBtn || saveLakeBtn.disabled) return;
-  const label = saveLakeBtn.textContent;
-  saveLakeBtn.disabled = true; saveLakeBtn.textContent = '保存中';
-  try {
-    const state = exportLakeState(world, { lakeIndex: lakeScene.lakeIndex, terrainVersion: lakeScene.terrainVersion });
-    const stats = lakeBuildingStats(world);
-    const response = await fetch(`/api/reacode/planet-lake-world/${encodeURIComponent(lakeScene.run)}/${lakeScene.lakeIndex}`, {
+function lakeStatus(text) {
+  if (!saveLakeBtn) return;
+  saveLakeBtn.textContent = text;
+  saveLakeBtn.dataset.state = text.startsWith('已存') ? 'saved' : text.startsWith('未存') || text.startsWith('待存') ? 'dirty' : 'busy';
+}
+function lakePayload() {
+  const state = exportLakeState(world, { lakeIndex: lakeScene.lakeIndex, terrainVersion: lakeScene.terrainVersion });
+  return { state, stats: lakeBuildingStats(world), sceneId: lakeScene.sceneId };
+}
+function lakeUrl() {
+  return `/api/reacode/planet-lake-world/${encodeURIComponent(lakeScene.run)}/${lakeScene.lakeIndex}`;
+}
+function scheduleLakeSave() {
+  if (!lakeScene) return;
+  lakeDirty = true;
+  lakeStatus('待存…');
+  clearTimeout(lakeSaveTimer);
+  lakeSaveTimer = setTimeout(() => { lakeSaveTimer = 0; saveLakeWorld({ auto: true }); }, 1600);
+}
+async function saveLakeWorld({ auto = false } = {}) {
+  if (!lakeScene || !saveLakeBtn) return;
+  if (lakeSaving) { await lakeSaving.catch(() => {}); }
+  if (!lakeDirty && auto) return;
+  clearTimeout(lakeSaveTimer); lakeSaveTimer = 0;
+  lakeDirty = false;
+  lakeStatus('保存中');
+  const payload = lakePayload();
+  lakeSaving = (async () => {
+    const response = await fetch(lakeUrl(), {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ state, stats, sceneId: lakeScene.sceneId }),
+      body: JSON.stringify(payload),
     });
     const result = await response.json().catch(() => ({}));
     if (!response.ok) throw new Error(result.detail || `保存失败（${response.status}）`);
     lakeScene.sceneId = result.scene?.id || lakeScene.sceneId;
-    lakeScene.savedState = state;
-    toast(`已保存 · ${stats.buildings} 栋 / ${stats.blocks} 块`);
+    lakeScene.savedState = payload.state;
+    lakeSavedAt = Date.now();
+    lakeStatus(`已存 · ${payload.stats.buildings} 栋`);
+    // 父页据此提示球面已同步
+    try { window.parent?.postMessage({ type: 'genai-lake-saved', buildings: payload.stats.buildings, blocks: payload.stats.blocks, sceneId: lakeScene.sceneId }, location.origin); } catch { /* 忽略 */ }
+    if (!auto) toast(`已保存 · ${payload.stats.buildings} 栋 / ${payload.stats.blocks} 块`);
+  })();
+  try {
+    await lakeSaving;
   } catch (err) {
+    lakeDirty = true;
+    lakeStatus('未存 · 点此重试');
     toast('保存失败：' + err.message);
   } finally {
-    saveLakeBtn.disabled = false; saveLakeBtn.textContent = label || '保存';
+    lakeSaving = null;
   }
 }
-if (saveLakeBtn) saveLakeBtn.onclick = saveLakeWorld;
+if (saveLakeBtn) {
+  saveLakeBtn.onclick = () => { lakeDirty = true; saveLakeWorld({ auto: false }); };
+  lakeStatus('已存');
+}
+// 关页面 / 切走时兜底：没存上的体素用 beacon 补一发，避免"盖完回去看不见"
+addEventListener('pagehide', () => {
+  if (!lakeDirty || !lakeScene) return;
+  try {
+    const body = JSON.stringify(lakePayload());
+    navigator.sendBeacon?.(lakeUrl(), new Blob([body], { type: 'application/json' }));
+  } catch { /* 忽略 */ }
+});
 document.getElementById('exportobj').onclick = async () => { const { downloadOBJ } = await import('../tools/objexport.js'); downloadOBJ(view.worldMesh.geometry, `town-${Date.now() % 1e6}.obj`); };
 document.getElementById('demo').onclick = () => { if (replaying) return; seed = (Math.random() * 1e6) | 0; loadScene(scene, true); toast(`新的${SCENES[scene].name}`); };
-document.getElementById('clear').onclick = () => { if (replaying) return; pushUndo(world.snapshot()); world.reset(); view.changed(); scheduleHash(); toast('已清空'); };
+document.getElementById('clear').onclick = () => { if (replaying) return; pushUndo(world.snapshot()); if (scene === 'lake') { buildScene(world, 'lake', seed); } else { world.reset(); } view.changed(); frameForScene(); scheduleHash(); toast('已清空'); };
 document.getElementById('share').onclick = async () => {
   const code = encodeWorld(world, scene);
   const url = `${location.origin}${location.pathname}?grid=${gridKind}#${code}`;

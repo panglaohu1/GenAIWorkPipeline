@@ -1,5 +1,5 @@
 const params=new URLSearchParams(location.search);
-if(params.has('planet'))await import('./rea-planet-workshop.js?v=townscaper-8');
+if(params.has('planet'))await import('./rea-planet-workshop.js?v=townscaper-9');
 else if(params.get('demo')==='1'||params.has('run')){
  await import('./rea-workshop.js?v=361d8b07c68f');
  const label=document.querySelector('#sceneSubtitle');if(label)label.textContent='独立示例场景 · 未连接星球湖区；不会修改球系统。';
