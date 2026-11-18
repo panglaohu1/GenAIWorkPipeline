@@ -175,7 +175,7 @@ function frameForScene() {
     const c = lakeCenterLocal(lakeScene.water);
     // 网格是 0.5 单位一格（= 3.6 m），取景距离也要按单位算，否则相机会退到湖外
     view.target.set(c.x, 0.12, c.z);
-    view.distance = Math.max(3.6, Math.max(c.width, c.depth) * 1.15, 4);
+    view.distance = Math.max(4.5, Math.max(c.width, c.depth) * 1.35);
     view.pitch = 0.92;
     view.updateCamera();
     return;

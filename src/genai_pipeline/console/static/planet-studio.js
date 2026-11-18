@@ -86,7 +86,22 @@ async function submitTerrainEdit(undo=false,operationOverride=null){
 $('#applyBrush').onclick=()=>submitTerrainEdit();$('#undoTerrain').onclick=()=>submitTerrainEdit(true);
 window.terrainEditor={addPoint:addBrushPoint,get points(){return brushPoints},get tool(){return brushTool}};
 
-function focusLake(){const water=data?.inlandWater?.[Number($('#lakeSelect').value)];if(!water)return;const c=new THREE.Vector3();let level=0;for(let i=0;i<water.positions.length;i+=3){const p=new THREE.Vector3(...water.positions.slice(i,i+3));c.add(p);level+=p.length()-R}c.normalize();level/=water.positions.length/3;focusPoint=c.clone().multiplyScalar(R+level+2);const tangent=new THREE.Vector3().crossVectors(Math.abs(c.y)>.9?new THREE.Vector3(1,0,0):new THREE.Vector3(0,1,0),c).normalize();const offset=c.clone().multiplyScalar(.75).addScaledVector(tangent,.65).normalize();azimuth=Math.atan2(offset.z,offset.x);polar=Math.acos(offset.y);const towns=(data.sceneInstances||[]).filter(s=>s.lakeIndex===Number($('#lakeSelect').value));let extent=0;for(const s of towns){if(s.kind==='lake-world'&&s.mesh?.positions){const p=s.mesh.positions;for(let i=0;i<p.length;i+=3)extent=Math.max(extent,Math.hypot(p[i],p[i+2]))}else for(const b of s.buildings||[])extent=Math.max(extent,Math.hypot(b.localPosition?.[0]||0,b.localPosition?.[2]||0)+3)}distance=extent?Math.max(45,extent*2.2):60;if(marker)marker.visible=false;}
+function focusLake(){const water=data?.inlandWater?.[Number($('#lakeSelect').value)];if(!water)return;const c=new THREE.Vector3();let level=0;for(let i=0;i<water.positions.length;i+=3){const p=new THREE.Vector3(...water.positions.slice(i,i+3));c.add(p);level+=p.length()-R}c.normalize();level/=water.positions.length/3;focusPoint=c.clone().multiplyScalar(R+level+2);const tangent=new THREE.Vector3().crossVectors(Math.abs(c.y)>.9?new THREE.Vector3(1,0,0):new THREE.Vector3(0,1,0),c).normalize();const offset=c.clone().multiplyScalar(.75).addScaledVector(tangent,.65).normalize();azimuth=Math.atan2(offset.z,offset.x);polar=Math.acos(offset.y);const towns=(data.sceneInstances||[]).filter(s=>s.lakeIndex===Number($('#lakeSelect').value));
+// 有体素场景时按楼群自己的中心取景（楼群常常偏在湖的一角，按湖心会拍空）
+const lw=towns.find(s=>s.kind==='lake-world'&&s.center&&s.extent);
+if(lw){
+ const dir=new THREE.Vector3(...lw.center).normalize();
+ focusPoint=dir.clone().multiplyScalar(R+4);
+ const t2=new THREE.Vector3().crossVectors(Math.abs(dir.y)>.9?new THREE.Vector3(1,0,0):new THREE.Vector3(0,1,0),dir).normalize();
+ const off=dir.clone().multiplyScalar(.75).addScaledVector(t2,.65).normalize();
+ azimuth=Math.atan2(off.z,off.x);polar=Math.acos(off.y);
+ distance=Math.max(42,Math.max(lw.extent.width||0,lw.extent.depth||0)*1.8);
+}else{
+ let extent=0;
+ for(const s of towns){if(s.kind==='lake-world'&&s.mesh?.positions){const p=s.mesh.positions;for(let i=0;i<p.length;i+=3)extent=Math.max(extent,Math.hypot(p[i],p[i+2]))}else for(const b of s.buildings||[])extent=Math.max(extent,Math.hypot(b.localPosition?.[0]||0,b.localPosition?.[2]||0)+3)}
+ distance=extent?Math.max(45,extent*2.2):60;
+}
+if(marker)marker.visible=false;}
 $('#focusLake').onclick=focusLake;
 $('#buildLakeScene').textContent='进入这个湖的场景能力管线';
 $('#buildLakeScene').onclick=async()=>{if(!data||!$('#lakeSelect').options.length)return;if(data.inlandWater[Number($('#lakeSelect').value)]?.frame?.kind!=='local-tangent-plane'){if(!await submitTerrainEdit(false,{tool:'flatten_lakes'})){return}}const context={planet:id,terrain_version:version,lake:$('#lakeSelect').value,count:$('#lakeCount').value,floors:$('#lakeFloors').value,brief:$('#lakeBrief').value,model:$('#lakeUseModel').checked?'1':'0'};location.assign('/static/reacode.html?'+new URLSearchParams(context)+'#scene')};
